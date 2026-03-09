@@ -182,6 +182,61 @@ export default async function LandingPage() {
         </div>
       </section>
 
+      {/* Compatible with — Scrolling marquee */}
+      <section className="relative z-10 py-12 overflow-hidden border-y" style={{ borderColor: '#1a1a1a' }}>
+        <style>{`
+          @keyframes marquee {
+            0% { transform: translateX(0) }
+            100% { transform: translateX(-50%) }
+          }
+          .marquee-track {
+            display: flex;
+            width: max-content;
+            animation: marquee 28s linear infinite;
+          }
+          .marquee-track:hover { animation-play-state: paused; }
+        `}</style>
+        <p className="text-center text-xs uppercase tracking-widest mb-8" style={{ color: '#444' }}>Works natively with</p>
+        <div className="relative overflow-hidden">
+          {/* Fade edges */}
+          <div className="absolute left-0 top-0 bottom-0 w-32 z-10 pointer-events-none" style={{ background: 'linear-gradient(to right, #080808, transparent)' }} />
+          <div className="absolute right-0 top-0 bottom-0 w-32 z-10 pointer-events-none" style={{ background: 'linear-gradient(to left, #080808, transparent)' }} />
+          <div className="marquee-track">
+            {[
+              { name: 'Claude Code', icon: '🤖', color: '#CC785C' },
+              { name: 'Cursor', icon: '⚡', color: '#5B6EF5' },
+              { name: 'Windsurf', icon: '🌊', color: '#4AADDE' },
+              { name: 'Copilot', icon: '🐙', color: '#6E40C9' },
+              { name: 'Codex', icon: '🧠', color: '#10A37F' },
+              { name: 'Cline', icon: '🔧', color: '#F59E0B' },
+              { name: 'Aider', icon: '💡', color: '#E879F9' },
+              { name: 'Continue', icon: '▶️', color: '#3B82F6' },
+              { name: 'Zed', icon: '⚡', color: '#FF6B35' },
+              // Duplicate for seamless loop
+              { name: 'Claude Code', icon: '🤖', color: '#CC785C' },
+              { name: 'Cursor', icon: '⚡', color: '#5B6EF5' },
+              { name: 'Windsurf', icon: '🌊', color: '#4AADDE' },
+              { name: 'Copilot', icon: '🐙', color: '#6E40C9' },
+              { name: 'Codex', icon: '🧠', color: '#10A37F' },
+              { name: 'Cline', icon: '🔧', color: '#F59E0B' },
+              { name: 'Aider', icon: '💡', color: '#E879F9' },
+              { name: 'Continue', icon: '▶️', color: '#3B82F6' },
+              { name: 'Zed', icon: '⚡', color: '#FF6B35' },
+            ].map((tool, i) => (
+              <div key={i} className="flex items-center gap-3 mx-8 px-5 py-3 rounded-full" style={{
+                border: '1px solid #222',
+                background: '#111',
+                whiteSpace: 'nowrap',
+              }}>
+                <span className="text-xl">{tool.icon}</span>
+                <span className="text-sm font-medium" style={{ color: '#AAAAAA' }}>{tool.name}</span>
+                <span className="w-1.5 h-1.5 rounded-full" style={{ background: tool.color }} />
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Features — Bento Grid */}
       <section id="features" className="relative z-10 py-20 px-6 max-w-7xl mx-auto">
         <div className="text-center mb-16">
