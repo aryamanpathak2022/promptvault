@@ -1,9 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 
 interface ApiKey {
   id: string
@@ -19,6 +16,7 @@ export default function SettingsClient({ initialKeys }: { initialKeys: ApiKey[] 
   const [creating, setCreating] = useState(false)
   const [newKey, setNewKey] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
+  const [copiedId, setCopiedId] = useState<string | null>(null)
 
   const handleCreate = async () => {
     if (!newKeyName.trim()) return
@@ -48,116 +46,165 @@ export default function SettingsClient({ initialKeys }: { initialKeys: ApiKey[] 
     setKeys(prev => prev.filter(k => k.id !== id))
   }
 
-  const copyKey = () => {
-    if (newKey) {
-      navigator.clipboard.writeText(newKey)
+  const copyKey = (text: string, id?: string) => {
+    navigator.clipboard.writeText(text)
+    if (id) {
+      setCopiedId(id)
+      setTimeout(() => setCopiedId(null), 2000)
+    } else {
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     }
   }
 
   return (
-    <div className="p-8 max-w-3xl space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold text-white">Settings</h1>
-        <p className="text-sm text-white/40 mt-1">Manage your API keys for CLI access</p>
+    <div className="flex-1 min-w-0" style={{ background: '#080808' }}>
+      {/* Header */}
+      <div className="px-8 py-6 border-b sticky top-0 z-10" style={{ borderColor: '#242424', background: 'rgba(8,8,8,0.9)', backdropFilter: 'blur(12px)' }}>
+        <h1 className="text-lg font-semibold text-white">Settings</h1>
+        <p className="text-xs mt-0.5" style={{ color: '#888' }}>Manage your API keys and CLI access</p>
       </div>
 
-      {/* New key revealed */}
-      {newKey && (
-        <div className="p-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10">
-          <div className="flex items-start justify-between mb-2">
-            <div>
-              <p className="text-sm font-medium text-emerald-400">✓ API key created</p>
-              <p className="text-xs text-white/50 mt-1">Save this key now — you won&apos;t see it again.</p>
+      <div className="px-8 py-6 max-w-3xl space-y-6">
+        {/* New key revealed */}
+        {newKey && (
+          <div className="p-5 rounded-xl" style={{ border: '1px solid rgba(74,222,128,0.3)', background: 'rgba(74,222,128,0.05)' }}>
+            <div className="flex items-start justify-between mb-3">
+              <div>
+                <p className="text-sm font-medium" style={{ color: '#4ADE80' }}>✓ API key created</p>
+                <p className="text-xs mt-1" style={{ color: '#888' }}>Save this key now — you won&apos;t see it again.</p>
+              </div>
+              <button onClick={() => setNewKey(null)} className="text-xl leading-none transition-colors" style={{ color: '#888' }}>×</button>
             </div>
-            <button onClick={() => setNewKey(null)} className="text-white/30 hover:text-white text-xl leading-none">×</button>
+            <div className="flex items-center gap-2">
+              <code className="flex-1 px-4 py-3 rounded-xl text-xs font-mono break-all" style={{ background: '#111111', border: '1px solid #242424', color: '#4ADE80' }}>{newKey}</code>
+              <button
+                onClick={() => copyKey(newKey)}
+                className="px-3 py-3 rounded-xl text-xs font-medium shrink-0 transition-all"
+                style={{ border: '1px solid #242424', color: copied ? '#4ADE80' : '#888', background: '#161616' }}
+              >
+                {copied ? '✓ Copied' : 'Copy'}
+              </button>
+            </div>
           </div>
-          <div className="flex items-center gap-2 mt-3">
-            <code className="flex-1 p-2 rounded-lg bg-black/40 text-xs text-emerald-300 font-mono break-all">{newKey}</code>
-            <Button size="sm" variant="secondary" onClick={copyKey}>
-              {copied ? '✓' : 'Copy'}
-            </Button>
+        )}
+
+        {/* Create key */}
+        <div className="rounded-xl overflow-hidden" style={{ border: '1px solid #242424' }}>
+          <div className="px-6 py-4 border-b" style={{ borderColor: '#242424', background: '#111111' }}>
+            <h2 className="font-semibold text-white text-sm">Create API key</h2>
+            <p className="text-xs mt-1" style={{ color: '#888' }}>API keys allow CLI and programmatic access to your vault.</p>
+          </div>
+          <div className="px-6 py-5" style={{ background: '#0d0d0d' }}>
+            <div className="flex items-center gap-3">
+              <input
+                value={newKeyName}
+                onChange={e => setNewKeyName(e.target.value)}
+                placeholder="Key name (e.g. laptop, CI/CD)"
+                className="flex-1 px-4 py-2.5 rounded-xl text-sm text-white placeholder-[#888] outline-none"
+                style={{ border: '1px solid #242424', background: '#111111' }}
+                onFocus={e => { e.currentTarget.style.borderColor = 'rgba(124,58,237,0.5)'; }}
+                onBlur={e => { e.currentTarget.style.borderColor = '#242424'; }}
+                onKeyDown={e => e.key === 'Enter' && handleCreate()}
+              />
+              <button
+                onClick={handleCreate}
+                disabled={creating || !newKeyName.trim()}
+                className="px-4 py-2.5 rounded-xl text-sm font-medium text-white disabled:opacity-40 transition-all shrink-0"
+                style={{ background: '#7C3AED' }}
+                onMouseEnter={e => { if (!creating && newKeyName.trim()) (e.currentTarget as HTMLButtonElement).style.background = '#6D28D9'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = '#7C3AED'; }}
+              >
+                {creating ? 'Creating...' : 'Create key'}
+              </button>
+            </div>
           </div>
         </div>
-      )}
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Create API key</CardTitle>
-          <CardDescription>API keys allow CLI and programmatic access to your vault.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center gap-3">
-            <Input
-              value={newKeyName}
-              onChange={e => setNewKeyName(e.target.value)}
-              placeholder="Key name (e.g. laptop, CI)"
-              className="flex-1"
-              onKeyDown={e => e.key === 'Enter' && handleCreate()}
-            />
-            <Button onClick={handleCreate} disabled={creating || !newKeyName.trim()}>
-              {creating ? 'Creating...' : 'Create key'}
-            </Button>
+        {/* Keys list */}
+        <div className="rounded-xl overflow-hidden" style={{ border: '1px solid #242424' }}>
+          <div className="px-6 py-4 border-b" style={{ borderColor: '#242424', background: '#111111' }}>
+            <h2 className="font-semibold text-white text-sm">Your API keys</h2>
+            <p className="text-xs mt-1" style={{ color: '#888' }}>
+              Use with the CLI: <code className="font-mono px-1.5 py-0.5 rounded" style={{ background: '#161616', color: '#a78bfa' }}>PROMPTVAULT_API_KEY=pv_...</code>
+            </p>
           </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Your API keys</CardTitle>
-          <CardDescription>
-            Use these with the CLI: <code className="text-white/70">pv --api-key YOUR_KEY</code> or set <code className="text-white/70">PROMPTVAULT_API_KEY</code> env var.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {keys.length === 0 ? (
-            <p className="text-sm text-white/30 py-4 text-center">No API keys yet</p>
-          ) : (
-            <div className="space-y-3">
-              {keys.map(key => (
-                <div key={key.id} className="flex items-center justify-between p-3 rounded-lg border border-white/10 bg-white/5">
-                  <div>
-                    <div className="text-sm font-medium text-white">{key.name}</div>
-                    <div className="text-xs text-white/30 font-mono mt-0.5">{key.key}</div>
-                    <div className="text-xs text-white/20 mt-1">
-                      Created {new Date(key.createdAt).toLocaleDateString()}
-                      {key.lastUsed && ` · Last used ${new Date(key.lastUsed).toLocaleDateString()}`}
+          <div style={{ background: '#0d0d0d' }}>
+            {keys.length === 0 ? (
+              <div className="px-6 py-12 text-center text-sm" style={{ color: '#888' }}>No API keys yet</div>
+            ) : (
+              <div className="divide-y" style={{ borderColor: '#242424' }}>
+                {keys.map(key => (
+                  <div key={key.id} className="flex items-center justify-between px-6 py-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <div className="w-2 h-2 rounded-full" style={{ background: '#4ADE80' }} />
+                        <span className="text-sm font-medium text-white">{key.name}</span>
+                      </div>
+                      <code className="text-xs font-mono" style={{ color: '#888' }}>{key.key}</code>
+                      <div className="text-xs mt-1" style={{ color: '#444' }}>
+                        Created {new Date(key.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                        {key.lastUsed && ` · Last used ${new Date(key.lastUsed).toLocaleDateString()}`}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 ml-4">
+                      <button
+                        onClick={() => copyKey(key.key, key.id)}
+                        className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+                        style={{ border: '1px solid #242424', color: copiedId === key.id ? '#4ADE80' : '#888', background: 'transparent' }}
+                      >
+                        {copiedId === key.id ? '✓' : 'Copy'}
+                      </button>
+                      <button
+                        onClick={() => handleDelete(key.id)}
+                        className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+                        style={{ border: '1px solid rgba(248,113,113,0.3)', color: '#F87171', background: 'rgba(248,113,113,0.06)' }}
+                        onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(248,113,113,0.12)'; }}
+                        onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(248,113,113,0.06)'; }}
+                      >
+                        Revoke
+                      </button>
                     </div>
                   </div>
-                  <Button variant="destructive" size="sm" onClick={() => handleDelete(key.id)}>
-                    Revoke
-                  </Button>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>CLI Usage</CardTitle>
-          <CardDescription>Install and configure the PromptVault CLI</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <pre className="p-4 rounded-lg bg-black/40 text-sm text-white/70 font-mono overflow-x-auto">{`# Install
-npm install -g promptvault
+        {/* CLI Usage */}
+        <div className="rounded-xl overflow-hidden" style={{ border: '1px solid #242424' }}>
+          <div className="px-6 py-4 border-b" style={{ borderColor: '#242424', background: '#111111' }}>
+            <h2 className="font-semibold text-white text-sm">CLI Usage</h2>
+            <p className="text-xs mt-1" style={{ color: '#888' }}>Install and configure the PromptVault CLI</p>
+          </div>
+          <div className="px-6 py-5" style={{ background: '#0d0d0d' }}>
+            <pre className="p-5 rounded-xl text-xs font-mono overflow-x-auto leading-relaxed" style={{ border: '1px solid #242424', background: '#111111', color: '#4ADE80' }}>{`# Install
+npm install -g pvault
 
-# Configure with your API key
-pv config set api-key YOUR_API_KEY
-pv config set api-url http://localhost:3000
+# Set your API key
+export PROMPTVAULT_API_KEY=pv_your_key_here
 
-# Save a prompt
-pv save "my-prompt"
+# Save a prompt from file
+pv save "code-reviewer" --file ./prompt.txt
 
-# List prompts
+# Or save from stdin
+echo "Your prompt text" | pv save "my-prompt"
+
+# List all prompts
 pv list
 
-# Show diff
-pv diff my-prompt v1 v2`}</pre>
-        </CardContent>
-      </Card>
+# Diff two versions
+pv diff code-reviewer v1 v2
+
+# Load a prompt
+pv load "code-reviewer"
+
+# MCP server (for Claude/Cursor)
+pv mcp-server`}</pre>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
