@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { auth } from '@/lib/auth'
 
 export default async function LandingPage() {
@@ -203,34 +204,41 @@ export default async function LandingPage() {
           <div className="absolute right-0 top-0 bottom-0 w-32 z-10 pointer-events-none" style={{ background: 'linear-gradient(to left, #080808, transparent)' }} />
           <div className="marquee-track">
             {[
-              { name: 'Claude Code', icon: '🤖', color: '#CC785C' },
-              { name: 'Cursor', icon: '⚡', color: '#5B6EF5' },
-              { name: 'Windsurf', icon: '🌊', color: '#4AADDE' },
-              { name: 'Copilot', icon: '🐙', color: '#6E40C9' },
-              { name: 'Codex', icon: '🧠', color: '#10A37F' },
-              { name: 'Cline', icon: '🔧', color: '#F59E0B' },
-              { name: 'Aider', icon: '💡', color: '#E879F9' },
-              { name: 'Continue', icon: '▶️', color: '#3B82F6' },
-              { name: 'Zed', icon: '⚡', color: '#FF6B35' },
+              { name: 'Claude Code', logo: '/logos/claude.svg', bg: '#2a1810' },
+              { name: 'Cursor', logo: '/logos/cursor.svg', bg: '#0d0d1a' },
+              { name: 'Windsurf', logo: '/logos/windsurf.svg', bg: '#0a1520', invert: true },
+              { name: 'GitHub Copilot', logo: '/logos/github.svg', bg: '#0d1117', invert: true },
+              { name: 'Codex (OpenAI)', logo: '/logos/openai.svg', bg: '#0a0a0a', invert: true },
+              { name: 'Cline', logo: '/logos/cline.svg', bg: '#0d1117' },
+              { name: 'VS Code', logo: '/logos/vscode.svg', bg: '#1e1e2e' },
+              { name: 'Zed', logo: '/logos/zed.svg', bg: '#1c1c1c' },
               // Duplicate for seamless loop
-              { name: 'Claude Code', icon: '🤖', color: '#CC785C' },
-              { name: 'Cursor', icon: '⚡', color: '#5B6EF5' },
-              { name: 'Windsurf', icon: '🌊', color: '#4AADDE' },
-              { name: 'Copilot', icon: '🐙', color: '#6E40C9' },
-              { name: 'Codex', icon: '🧠', color: '#10A37F' },
-              { name: 'Cline', icon: '🔧', color: '#F59E0B' },
-              { name: 'Aider', icon: '💡', color: '#E879F9' },
-              { name: 'Continue', icon: '▶️', color: '#3B82F6' },
-              { name: 'Zed', icon: '⚡', color: '#FF6B35' },
+              { name: 'Claude Code', logo: '/logos/claude.svg', bg: '#2a1810' },
+              { name: 'Cursor', logo: '/logos/cursor.svg', bg: '#0d0d1a' },
+              { name: 'Windsurf', logo: '/logos/windsurf.svg', bg: '#0a1520', invert: true },
+              { name: 'GitHub Copilot', logo: '/logos/github.svg', bg: '#0d1117', invert: true },
+              { name: 'Codex (OpenAI)', logo: '/logos/openai.svg', bg: '#0a0a0a', invert: true },
+              { name: 'Cline', logo: '/logos/cline.svg', bg: '#0d1117' },
+              { name: 'VS Code', logo: '/logos/vscode.svg', bg: '#1e1e2e' },
+              { name: 'Zed', logo: '/logos/zed.svg', bg: '#1c1c1c' },
             ].map((tool, i) => (
-              <div key={i} className="flex items-center gap-3 mx-8 px-5 py-3 rounded-full" style={{
+              <div key={i} className="flex items-center gap-3 mx-6 px-5 py-3 rounded-xl" style={{
                 border: '1px solid #222',
-                background: '#111',
+                background: tool.bg,
                 whiteSpace: 'nowrap',
+                flexShrink: 0,
               }}>
-                <span className="text-xl">{tool.icon}</span>
+                <div className="w-6 h-6 relative flex-shrink-0">
+                  <Image
+                    src={tool.logo}
+                    alt={tool.name}
+                    width={24}
+                    height={24}
+                    className="object-contain"
+                    style={tool.invert ? { filter: 'brightness(0) invert(1)' } : {}}
+                  />
+                </div>
                 <span className="text-sm font-medium" style={{ color: '#AAAAAA' }}>{tool.name}</span>
-                <span className="w-1.5 h-1.5 rounded-full" style={{ background: tool.color }} />
               </div>
             ))}
           </div>
