@@ -103,7 +103,7 @@ export default function SettingsClient({ initialKeys }: { initialKeys: ApiKey[] 
                 placeholder="Key name (e.g. laptop, CI/CD)"
                 className="flex-1 px-4 py-2.5 rounded-xl text-sm text-white placeholder-[#888] outline-none"
                 style={{ border: '1px solid #242424', background: '#111111' }}
-                onFocus={e => { e.currentTarget.style.borderColor = 'rgba(124,58,237,0.5)'; }}
+                onFocus={e => { e.currentTarget.style.borderColor = 'rgba(245,158,11,0.5)'; }}
                 onBlur={e => { e.currentTarget.style.borderColor = '#242424'; }}
                 onKeyDown={e => e.key === 'Enter' && handleCreate()}
               />
@@ -111,9 +111,9 @@ export default function SettingsClient({ initialKeys }: { initialKeys: ApiKey[] 
                 onClick={handleCreate}
                 disabled={creating || !newKeyName.trim()}
                 className="px-4 py-2.5 rounded-xl text-sm font-medium text-white disabled:opacity-40 transition-all shrink-0"
-                style={{ background: '#7C3AED' }}
-                onMouseEnter={e => { if (!creating && newKeyName.trim()) (e.currentTarget as HTMLButtonElement).style.background = '#6D28D9'; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = '#7C3AED'; }}
+                style={{ background: '#F59E0B' }}
+                onMouseEnter={e => { if (!creating && newKeyName.trim()) (e.currentTarget as HTMLButtonElement).style.background = '#D97706'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = '#F59E0B'; }}
               >
                 {creating ? 'Creating...' : 'Create key'}
               </button>
@@ -126,7 +126,7 @@ export default function SettingsClient({ initialKeys }: { initialKeys: ApiKey[] 
           <div className="px-6 py-4 border-b" style={{ borderColor: '#242424', background: '#111111' }}>
             <h2 className="font-semibold text-white text-sm">Your API keys</h2>
             <p className="text-xs mt-1" style={{ color: '#888' }}>
-              Use with the CLI: <code className="font-mono px-1.5 py-0.5 rounded" style={{ background: '#161616', color: '#a78bfa' }}>PROMPTVAULT_API_KEY=pv_...</code>
+              Use with the CLI: <code className="font-mono px-1.5 py-0.5 rounded" style={{ background: '#161616', color: '#FCD34D' }}>PROMPTVAULT_API_KEY=pv_...</code>
             </p>
           </div>
           <div style={{ background: '#0d0d0d' }}>

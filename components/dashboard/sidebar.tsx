@@ -39,14 +39,14 @@ export default function DashboardSidebar({ user }: { user: User }) {
   ]
 
   return (
-    <aside className="w-56 shrink-0 flex flex-col h-screen sticky top-0" style={{ borderRight: '1px solid #242424', background: '#0d0d0d' }}>
+    <aside className="w-60 shrink-0 flex flex-col h-screen sticky top-0" style={{ borderRight: '1px solid #222', background: '#0f0f0f' }}>
       {/* Logo */}
-      <div className="p-5 border-b" style={{ borderColor: '#242424' }}>
+      <div className="p-5 border-b" style={{ borderColor: '#222' }}>
         <Link href="/" className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, #7C3AED, #a855f7)' }}>
+          <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" style={{ background: '#F59E0B' }}>
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <rect x="1" y="3" width="12" height="8" rx="1.5" stroke="white" strokeWidth="1.5"/>
-              <path d="M4 6h6M4 8.5h4" stroke="white" strokeWidth="1.2" strokeLinecap="round"/>
+              <rect x="1" y="3" width="12" height="8" rx="1.5" stroke="#080808" strokeWidth="1.5"/>
+              <path d="M4 6h6M4 8.5h4" stroke="#080808" strokeWidth="1.2" strokeLinecap="round"/>
             </svg>
           </div>
           <span className="font-semibold text-white text-sm">PromptVault</span>
@@ -66,12 +66,12 @@ export default function DashboardSidebar({ user }: { user: User }) {
                 active ? "text-white" : "hover:text-white"
               )}
               style={active ? {
-                background: 'rgba(124,58,237,0.12)',
-                color: 'white',
+                background: 'rgba(245,158,11,0.1)',
+                color: '#FAFAFA',
               } : { color: '#888' }}
             >
               {active && (
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-r-full" style={{ background: '#7C3AED' }} />
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-r-full" style={{ background: '#F59E0B' }} />
               )}
               {item.icon}
               {item.label}
@@ -81,13 +81,13 @@ export default function DashboardSidebar({ user }: { user: User }) {
       </nav>
 
       {/* User */}
-      <div className="p-3 border-t" style={{ borderColor: '#242424' }}>
-        <div className="flex items-center gap-2.5 p-2 rounded-lg mb-1" style={{ background: '#161616' }}>
+      <div className="p-3 border-t" style={{ borderColor: '#222' }}>
+        <div className="flex items-center gap-2.5 p-2 rounded-lg mb-1" style={{ background: '#141414' }}>
           {user.image ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={user.image} alt="" className="w-7 h-7 rounded-full" />
           ) : (
-            <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium text-white" style={{ background: 'linear-gradient(135deg, #7C3AED, #a855f7)' }}>
+            <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium" style={{ background: '#F59E0B', color: '#080808' }}>
               {user.name?.[0]?.toUpperCase() ?? user.email?.[0]?.toUpperCase() ?? '?'}
             </div>
           )}
@@ -100,7 +100,7 @@ export default function DashboardSidebar({ user }: { user: User }) {
           onClick={() => signOut({ callbackUrl: '/' })}
           className="w-full text-xs px-2 py-1.5 rounded-lg transition-colors text-left"
           style={{ color: '#888' }}
-          onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = '#EDEDED'; (e.currentTarget as HTMLButtonElement).style.background = '#161616'; }}
+          onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = '#FAFAFA'; (e.currentTarget as HTMLButtonElement).style.background = '#141414'; }}
           onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = '#888'; (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
         >
           Sign out

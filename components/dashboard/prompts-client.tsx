@@ -31,7 +31,7 @@ const TAG_COLORS: Record<string, { bg: string; color: string }> = {
 }
 
 function getTagStyle(tag: string) {
-  return TAG_COLORS[tag.toLowerCase()] ?? { bg: 'rgba(124,58,237,0.12)', color: '#a78bfa' }
+  return TAG_COLORS[tag.toLowerCase()] ?? { bg: 'rgba(245,158,11,0.12)', color: '#FCD34D' }
 }
 
 export default function PromptsClient({ initialPrompts }: { initialPrompts: Prompt[] }) {
@@ -60,9 +60,9 @@ export default function PromptsClient({ initialPrompts }: { initialPrompts: Prom
         <button
           onClick={() => setShowCreate(true)}
           className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white transition-all"
-          style={{ background: '#7C3AED' }}
-          onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = '#6D28D9'; (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-1px)'; (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 4px 16px rgba(124,58,237,0.35)'; }}
-          onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = '#7C3AED'; (e.currentTarget as HTMLButtonElement).style.transform = ''; (e.currentTarget as HTMLButtonElement).style.boxShadow = ''; }}
+          style={{ background: '#F59E0B' }}
+          onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = '#D97706'; (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-1px)'; (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 4px 16px rgba(245,158,11,0.35)'; }}
+          onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = '#F59E0B'; (e.currentTarget as HTMLButtonElement).style.transform = ''; (e.currentTarget as HTMLButtonElement).style.boxShadow = ''; }}
         >
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
             <path d="M7 1v12M1 7h12" stroke="white" strokeWidth="1.8" strokeLinecap="round"/>
@@ -85,7 +85,7 @@ export default function PromptsClient({ initialPrompts }: { initialPrompts: Prom
             onChange={e => setSearch(e.target.value)}
             className="w-full max-w-md pl-9 pr-4 py-2.5 rounded-xl text-sm text-white placeholder-[#888] outline-none transition-colors"
             style={{ border: '1px solid #242424', background: '#111111' }}
-            onFocus={e => { e.currentTarget.style.borderColor = 'rgba(124,58,237,0.5)'; }}
+            onFocus={e => { e.currentTarget.style.borderColor = 'rgba(245,158,11,0.5)'; }}
             onBlur={e => { e.currentTarget.style.borderColor = '#242424'; }}
           />
         </div>
@@ -93,10 +93,10 @@ export default function PromptsClient({ initialPrompts }: { initialPrompts: Prom
         {/* Prompts grid */}
         {filtered.length === 0 ? (
           <div className="text-center py-24 flex flex-col items-center">
-            <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-5" style={{ background: 'rgba(124,58,237,0.1)', border: '1px solid rgba(124,58,237,0.2)' }}>
+            <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-5" style={{ background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.2)' }}>
               <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-                <rect x="3" y="5" width="22" height="18" rx="3" stroke="#7C3AED" strokeWidth="1.8"/>
-                <path d="M8 11h12M8 15h8" stroke="#7C3AED" strokeWidth="1.5" strokeLinecap="round"/>
+                <rect x="3" y="5" width="22" height="18" rx="3" stroke="#F59E0B" strokeWidth="1.8"/>
+                <path d="M8 11h12M8 15h8" stroke="#F59E0B" strokeWidth="1.5" strokeLinecap="round"/>
               </svg>
             </div>
             <h3 className="font-semibold text-white mb-2 text-lg">{search ? 'No prompts found' : 'No prompts yet'}</h3>
@@ -107,7 +107,7 @@ export default function PromptsClient({ initialPrompts }: { initialPrompts: Prom
               <button
                 onClick={() => setShowCreate(true)}
                 className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium text-white"
-                style={{ background: '#7C3AED' }}
+                style={{ background: '#F59E0B' }}
               >
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                   <path d="M7 1v12M1 7h12" stroke="white" strokeWidth="1.8" strokeLinecap="round"/>
@@ -126,10 +126,10 @@ export default function PromptsClient({ initialPrompts }: { initialPrompts: Prom
                 style={{ border: '1px solid #242424', background: '#111111' }}
                 onMouseEnter={e => {
                   const el = e.currentTarget as HTMLAnchorElement;
-                  el.style.borderColor = 'rgba(124,58,237,0.4)';
+                  el.style.borderColor = 'rgba(245,158,11,0.4)';
                   el.style.background = '#161616';
                   el.style.transform = 'translateY(-1px)';
-                  el.style.boxShadow = '0 4px 20px rgba(124,58,237,0.08)';
+                  el.style.boxShadow = '0 4px 20px rgba(245,158,11,0.08)';
                 }}
                 onMouseLeave={e => {
                   const el = e.currentTarget as HTMLAnchorElement;
@@ -141,7 +141,7 @@ export default function PromptsClient({ initialPrompts }: { initialPrompts: Prom
               >
                 <div className="flex items-start justify-between mb-3">
                   <h3 className="font-medium text-white truncate flex-1 text-sm">{prompt.name}</h3>
-                  <span className="text-xs ml-2 shrink-0 font-mono px-1.5 py-0.5 rounded" style={{ color: '#7C3AED', background: 'rgba(124,58,237,0.1)' }}>
+                  <span className="text-xs ml-2 shrink-0 font-mono px-1.5 py-0.5 rounded" style={{ color: '#F59E0B', background: 'rgba(245,158,11,0.1)' }}>
                     v{prompt.versions[0]?.version ?? 1}
                   </span>
                 </div>

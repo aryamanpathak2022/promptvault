@@ -31,7 +31,7 @@ const TAG_COLORS: Record<string, { bg: string; color: string }> = {
 }
 
 function getTagStyle(tag: string) {
-  return TAG_COLORS[tag.toLowerCase()] ?? { bg: 'rgba(124,58,237,0.12)', color: '#a78bfa' }
+  return TAG_COLORS[tag.toLowerCase()] ?? { bg: 'rgba(245,158,11,0.12)', color: '#FCD34D' }
 }
 
 export default function PromptDetailClient({ prompt: initialPrompt }: { prompt: Prompt }) {
@@ -110,7 +110,7 @@ export default function PromptDetailClient({ prompt: initialPrompt }: { prompt: 
               onClick={() => { setEditing(true); setTab('content') }}
               className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-white transition-all"
               style={{ border: '1px solid #242424', background: '#161616' }}
-              onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(124,58,237,0.5)'; }}
+              onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(245,158,11,0.5)'; }}
               onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = '#242424'; }}
             >
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -140,8 +140,8 @@ export default function PromptDetailClient({ prompt: initialPrompt }: { prompt: 
               className="px-4 py-2 text-sm capitalize transition-colors border-b-2 rounded-t-lg"
               style={tab === t ? {
                 color: 'white',
-                borderBottomColor: '#7C3AED',
-                background: 'rgba(124,58,237,0.08)',
+                borderBottomColor: '#F59E0B',
+                background: 'rgba(245,158,11,0.08)',
               } : {
                 color: '#888',
                 borderBottomColor: 'transparent',
@@ -166,7 +166,7 @@ export default function PromptDetailClient({ prompt: initialPrompt }: { prompt: 
                   placeholder="Enter your prompt..."
                   className="w-full p-5 rounded-xl font-mono text-sm outline-none resize-y"
                   style={{ border: '1px solid #242424', background: '#111111', color: '#4ADE80', lineHeight: '1.7' }}
-                  onFocus={e => { e.currentTarget.style.borderColor = 'rgba(124,58,237,0.5)'; }}
+                  onFocus={e => { e.currentTarget.style.borderColor = 'rgba(245,158,11,0.5)'; }}
                   onBlur={e => { e.currentTarget.style.borderColor = '#242424'; }}
                 />
                 <div className="flex items-center gap-3">
@@ -176,14 +176,14 @@ export default function PromptDetailClient({ prompt: initialPrompt }: { prompt: 
                     placeholder="Describe what changed..."
                     className="flex-1 px-4 py-2.5 rounded-xl text-sm text-white placeholder-[#888] outline-none"
                     style={{ border: '1px solid #242424', background: '#111111' }}
-                    onFocus={e => { e.currentTarget.style.borderColor = 'rgba(124,58,237,0.5)'; }}
+                    onFocus={e => { e.currentTarget.style.borderColor = 'rgba(245,158,11,0.5)'; }}
                     onBlur={e => { e.currentTarget.style.borderColor = '#242424'; }}
                   />
                   <button
                     onClick={handleSaveVersion}
                     disabled={saving}
                     className="px-4 py-2.5 rounded-xl text-sm font-medium text-white disabled:opacity-50"
-                    style={{ background: '#7C3AED' }}
+                    style={{ background: '#F59E0B' }}
                   >
                     {saving ? 'Saving...' : 'Save version'}
                   </button>
@@ -241,7 +241,7 @@ export default function PromptDetailClient({ prompt: initialPrompt }: { prompt: 
                       onClick={() => { setEditing(true); setEditContent(activeVersion?.content ?? '') }}
                       className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
                       style={{ border: '1px solid #242424', color: '#888', background: 'transparent' }}
-                      onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(124,58,237,0.5)'; (e.currentTarget as HTMLButtonElement).style.color = '#EDEDED'; }}
+                      onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(245,158,11,0.5)'; (e.currentTarget as HTMLButtonElement).style.color = '#EDEDED'; }}
                       onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = '#242424'; (e.currentTarget as HTMLButtonElement).style.color = '#888'; }}
                     >
                       Edit
@@ -259,7 +259,7 @@ export default function PromptDetailClient({ prompt: initialPrompt }: { prompt: 
         {/* History tab */}
         {tab === 'history' && (
           <div className="space-y-2 relative">
-            <div className="absolute left-[27px] top-8 bottom-4 w-px" style={{ background: 'linear-gradient(to bottom, #7C3AED, transparent)' }} />
+            <div className="absolute left-[27px] top-8 bottom-4 w-px" style={{ background: 'linear-gradient(to bottom, #F59E0B, transparent)' }} />
             {prompt.versions.map((v, i) => (
               <div
                 key={v.id}
@@ -268,20 +268,20 @@ export default function PromptDetailClient({ prompt: initialPrompt }: { prompt: 
               >
                 {/* Dot */}
                 <div className="relative z-10 w-4 h-4 rounded-full mt-4 shrink-0 flex items-center justify-center transition-all" style={{
-                  background: activeVersion?.id === v.id ? '#7C3AED' : '#242424',
-                  border: `2px solid ${activeVersion?.id === v.id ? '#7C3AED' : '#333'}`,
+                  background: activeVersion?.id === v.id ? '#F59E0B' : '#242424',
+                  border: `2px solid ${activeVersion?.id === v.id ? '#F59E0B' : '#333'}`,
                   marginLeft: '20px',
                 }} />
                 <div
                   className="flex-1 p-4 rounded-xl transition-all"
                   style={{
-                    border: `1px solid ${activeVersion?.id === v.id ? 'rgba(124,58,237,0.4)' : '#242424'}`,
-                    background: activeVersion?.id === v.id ? 'rgba(124,58,237,0.06)' : '#111111',
+                    border: `1px solid ${activeVersion?.id === v.id ? 'rgba(245,158,11,0.4)' : '#242424'}`,
+                    background: activeVersion?.id === v.id ? 'rgba(245,158,11,0.06)' : '#111111',
                   }}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <span className="text-xs font-mono font-bold px-2 py-0.5 rounded" style={{ background: 'rgba(124,58,237,0.12)', color: '#a78bfa' }}>v{v.version}</span>
+                      <span className="text-xs font-mono font-bold px-2 py-0.5 rounded" style={{ background: 'rgba(245,158,11,0.12)', color: '#FCD34D' }}>v{v.version}</span>
                       <span className="text-sm font-medium text-white">{v.message ?? 'No message'}</span>
                       {i === 0 && <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: 'rgba(74,222,128,0.1)', color: '#4ADE80' }}>latest</span>}
                     </div>
