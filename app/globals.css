@@ -6,6 +6,7 @@
   --accent: #F59E0B;
   --accent-bright: #FCD34D;
   --accent-dim: #92400E;
+  --font-caveat: 'Caveat', cursive;
 }
 
 * {

@@ -129,13 +129,67 @@ export default async function LandingPage() {
         </div>
 
         <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-6 leading-[1.05] animate-fade-up-1">
-          Version control for your{' '}
-          <span style={{
-            background: 'linear-gradient(135deg, #F59E0B 0%, #FCD34D 60%, #F59E0B 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
-          }}>prompts.</span>
+          {/* "Version" with strikethrough + "vibe" scrawled on top */}
+          <span className="relative inline-block mr-3">
+            <span style={{ color: '#444', textDecoration: 'none' }}>Version</span>
+            {/* Strikethrough SVG */}
+            <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 160 80" preserveAspectRatio="none" style={{ top: 0, left: 0 }}>
+              <path d="M4,42 Q40,38 80,40 Q120,42 156,39" stroke="#F59E0B" strokeWidth="3" fill="none" strokeLinecap="round"
+                style={{ opacity: 0.8 }}
+              />
+            </svg>
+            {/* "vibe" handwritten above, tilted */}
+            <span className="absolute font-normal pointer-events-none select-none"
+              style={{
+                top: '-0.7em',
+                left: '10%',
+                fontSize: '0.45em',
+                color: '#F59E0B',
+                fontFamily: "'Caveat', 'Segoe Script', cursive",
+                transform: 'rotate(-4deg)',
+                letterSpacing: '0.05em',
+                whiteSpace: 'nowrap',
+                textShadow: '0 0 20px rgba(245,158,11,0.4)',
+              }}>
+              vibe ✦
+            </span>
+          </span>
+          control for your{' '}
+          {/* "prompts." with hand-drawn circle SVG */}
+          <span className="relative inline-block">
+            <span style={{
+              background: 'linear-gradient(135deg, #F59E0B 0%, #FCD34D 60%, #F59E0B 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+            }}>prompts.</span>
+            {/* Hand-drawn circle around "prompts." */}
+            <svg className="absolute pointer-events-none" viewBox="0 0 220 80"
+              style={{ top: '-18%', left: '-6%', width: '112%', height: '136%', overflow: 'visible' }}>
+              <ellipse cx="110" cy="42" rx="103" ry="34"
+                fill="none" stroke="#F59E0B" strokeWidth="2.5" strokeLinecap="round"
+                strokeDasharray="4 2"
+                style={{ opacity: 0.65 }}
+              />
+              {/* Small arrow pointing to circle */}
+              <path d="M195,14 Q205,20 200,28" stroke="#F59E0B" strokeWidth="2" fill="none" strokeLinecap="round" style={{ opacity: 0.5 }}/>
+              <path d="M198,26 L200,28 L203,24" stroke="#F59E0B" strokeWidth="2" fill="none" strokeLinecap="round" style={{ opacity: 0.5 }}/>
+            </svg>
+            {/* "← the good stuff" annotation */}
+            <span className="absolute hidden md:block font-normal pointer-events-none select-none"
+              style={{
+                bottom: '-1.4em',
+                right: '-0.5em',
+                fontSize: '0.28em',
+                color: '#F59E0B',
+                fontFamily: "'Caveat', 'Segoe Script', cursive",
+                transform: 'rotate(2deg)',
+                opacity: 0.7,
+                whiteSpace: 'nowrap',
+              }}>
+              ← the important part
+            </span>
+          </span>
         </h1>
 
         <p className="text-lg md:text-xl max-w-2xl mx-auto mb-10 animate-fade-up-2 leading-relaxed" style={{ color: '#888' }}>
