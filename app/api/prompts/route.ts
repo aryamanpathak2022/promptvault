@@ -29,7 +29,8 @@ function serializePromptSummary(prompt: any) {
     isPublic: prompt.isPublic,
     createdAt: prompt.createdAt.toISOString(),
     updatedAt: prompt.updatedAt.toISOString(),
-    versionCount: prompt._count.versions,
+    versionCount: prompt.versions.length,
+    searchableText: [prompt.name, prompt.tags, ...prompt.versions.map((version: any) => version.content)].join(' '),
     latestVersion: prompt.versions[0] ? serializeVersion(prompt.versions[0]) : null,
   }
 }
@@ -41,13 +42,7 @@ export async function GET(req: Request) {
   const prompts = await prisma.prompt.findMany({
     where: { userId: ctx.userId },
     include: {
-      versions: {
-        orderBy: { version: 'desc' },
-        take: 1,
-      },
-      _count: {
-        select: { versions: true },
-      },
+      versions: { orderBy: { version: 'desc' } },
     },
     orderBy: { updatedAt: 'desc' },
   })
@@ -87,13 +82,7 @@ export async function POST(req: Request) {
       },
     },
     include: {
-      versions: {
-        orderBy: { version: 'desc' },
-        take: 1,
-      },
-      _count: {
-        select: { versions: true },
-      },
+      versions: { orderBy: { version: 'desc' } },
     },
   })
 

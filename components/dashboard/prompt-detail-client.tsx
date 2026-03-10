@@ -5,6 +5,7 @@ import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import DiffViewer from './diff-viewer'
 import { Button } from '@/components/ui/button'
+import CopyButton from '@/components/ui/copy-button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 
@@ -45,9 +46,10 @@ export default function PromptDetailClient({ prompt: initialPrompt }: { prompt: 
   const [draftContent, setDraftContent] = useState(initialPrompt.versions[0]?.content ?? '')
   const [commitMessage, setCommitMessage] = useState('')
   const [modelTag, setModelTag] = useState(initialPrompt.versions[0]?.model ?? '')
+  const [isPublic, setIsPublic] = useState(initialPrompt.isPublic)
   const [saving, setSaving] = useState(false)
+  const [sharing, setSharing] = useState(false)
   const [deleting, setDeleting] = useState(false)
-  const [copied, setCopied] = useState(false)
   const [error, setError] = useState('')
 
   const selectedVersion = useMemo(
@@ -59,12 +61,7 @@ export default function PromptDetailClient({ prompt: initialPrompt }: { prompt: 
     [compareVersionId, prompt.versions]
   )
 
-  const handleCopy = async () => {
-    if (!selectedVersion) return
-    await navigator.clipboard.writeText(selectedVersion.content)
-    setCopied(true)
-    window.setTimeout(() => setCopied(false), 1500)
-  }
+  const publicUrl = typeof window === 'undefined' ? `/p/${prompt.id}` : `${window.location.origin}/p/${prompt.id}`
 
   const handleCreateVersion = async () => {
     if (!draftContent.trim()) {
@@ -102,6 +99,29 @@ export default function PromptDetailClient({ prompt: initialPrompt }: { prompt: 
       setError(caughtError instanceof Error ? caughtError.message : 'Failed to create version.')
     } finally {
       setSaving(false)
+    }
+  }
+
+  const handleTogglePublic = async () => {
+    setSharing(true)
+    setError('')
+
+    try {
+      const response = await fetch(`/api/prompts/${prompt.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isPublic: !isPublic }),
+      })
+
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error ?? 'Failed to update sharing.')
+
+      setPrompt(data)
+      setIsPublic(data.isPublic)
+    } catch (caughtError) {
+      setError(caughtError instanceof Error ? caughtError.message : 'Failed to update sharing.')
+    } finally {
+      setSharing(false)
     }
   }
 
@@ -148,7 +168,7 @@ export default function PromptDetailClient({ prompt: initialPrompt }: { prompt: 
               ))}
             </div>
           </div>
-          <div className="flex gap-3">
+          <div className="flex flex-wrap gap-3">
             <Button variant="outline" onClick={loadSelectedIntoDraft}>
               Use selected as base
             </Button>
@@ -159,7 +179,7 @@ export default function PromptDetailClient({ prompt: initialPrompt }: { prompt: 
         </div>
       </div>
 
-      <div className="grid gap-6 px-5 py-6 md:px-8 xl:grid-cols-[320px_minmax(0,1fr)]">
+      <div className="grid gap-6 px-5 py-6 md:px-8 xl:grid-cols-[340px_minmax(0,1fr)]">
         <aside className="space-y-4 xl:sticky xl:top-6 xl:self-start">
           <div className="rounded-3xl border border-[#1f1f1f] bg-[#101010] p-5">
             <div className="flex items-center justify-between gap-3">
@@ -175,36 +195,40 @@ export default function PromptDetailClient({ prompt: initialPrompt }: { prompt: 
               {prompt.versions.map((version, index) => {
                 const active = version.id === selectedVersion?.id
                 return (
-                  <button
+                  <div
                     key={version.id}
-                    onClick={() => setSelectedVersionId(version.id)}
                     className={
                       active
-                        ? 'relative w-full rounded-2xl border border-[#F59E0B]/30 bg-[#F59E0B]/10 p-4 text-left'
-                        : 'relative w-full rounded-2xl border border-[#222222] bg-[#121212] p-4 text-left transition-colors hover:border-[#F59E0B]/20 hover:bg-[#151515]'
+                        ? 'rounded-2xl border border-[#F59E0B]/30 bg-[#F59E0B]/10 p-4'
+                        : 'rounded-2xl border border-[#222222] bg-[#121212] p-4 transition-colors hover:border-[#F59E0B]/20 hover:bg-[#151515]'
                     }
                   >
-                    <div className="flex items-center justify-between gap-3">
-                      <span className="rounded-full border border-[#F59E0B]/20 bg-[#0b0b0b] px-2.5 py-1 font-mono text-xs text-[#f8c86f]">
-                        v{version.version}
-                      </span>
-                      {index === 0 && (
-                        <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-[11px] text-emerald-300">
-                          latest
+                    <button onClick={() => setSelectedVersionId(version.id)} className="w-full text-left">
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="rounded-full border border-[#F59E0B]/20 bg-[#0b0b0b] px-2.5 py-1 font-mono text-xs text-[#f8c86f]">
+                          v{version.version}
                         </span>
-                      )}
+                        {index === 0 && (
+                          <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-[11px] text-emerald-300">
+                            latest
+                          </span>
+                        )}
+                      </div>
+                      <p className="mt-3 text-sm font-medium text-zinc-100">{version.message || 'No commit message'}</p>
+                      <p className="mt-2 line-clamp-2 whitespace-pre-wrap font-mono text-xs leading-5 text-zinc-500">
+                        {version.content}
+                      </p>
+                    </button>
+                    <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-zinc-500">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span>{formatTimestamp(version.createdAt)}</span>
+                        {version.model && (
+                          <span className="rounded-full border border-[#2a2a2a] px-2 py-0.5 text-zinc-400">{version.model}</span>
+                        )}
+                      </div>
+                      <CopyButton value={version.content} label="Copy" copiedLabel="Copied" />
                     </div>
-                    <p className="mt-3 text-sm font-medium text-zinc-100">
-                      {version.message || 'No commit message'}
-                    </p>
-                    <p className="mt-2 line-clamp-2 whitespace-pre-wrap font-mono text-xs leading-5 text-zinc-500">
-                      {version.content}
-                    </p>
-                    <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-zinc-500">
-                      <span>{formatTimestamp(version.createdAt)}</span>
-                      {version.model && <span className="rounded-full border border-[#2a2a2a] px-2 py-0.5 text-zinc-400">{version.model}</span>}
-                    </div>
-                  </button>
+                  </div>
                 )
               })}
             </div>
@@ -213,15 +237,44 @@ export default function PromptDetailClient({ prompt: initialPrompt }: { prompt: 
 
         <div className="space-y-6">
           <section className="rounded-3xl border border-[#1f1f1f] bg-[#101010] p-5 md:p-6">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+              <div>
+                <p className="text-xs uppercase tracking-[0.24em] text-[#F59E0B]">Public sharing</p>
+                <h2 className="mt-2 text-xl font-semibold text-zinc-50">Share this prompt read-only</h2>
+                <p className="mt-1 text-sm text-zinc-400">
+                  Toggle public access to publish a read-only prompt page and surface it in `/explore`.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={handleTogglePublic}
+                disabled={sharing}
+                className={`relative h-8 w-14 rounded-full transition-colors ${isPublic ? 'bg-[#F59E0B]' : 'bg-[#27272a]'}`}
+              >
+                <span
+                  className={`absolute top-1 h-6 w-6 rounded-full bg-white transition-transform ${isPublic ? 'translate-x-7' : 'translate-x-1'}`}
+                />
+              </button>
+            </div>
+            <div className="mt-5 rounded-2xl border border-[#1f1f1f] bg-[#0b0b0b] p-4">
+              <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                <div>
+                  <p className="text-sm font-medium text-zinc-100">{isPublic ? 'Public link is active' : 'Prompt is private'}</p>
+                  <p className="mt-1 text-sm text-zinc-500">{isPublic ? publicUrl : 'Turn on public sharing to create a read-only share URL.'}</p>
+                </div>
+                {isPublic && <CopyButton value={publicUrl} label="Copy share URL" copiedLabel="URL copied" />}
+              </div>
+            </div>
+          </section>
+
+          <section className="rounded-3xl border border-[#1f1f1f] bg-[#101010] p-5 md:p-6">
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
               <div>
                 <p className="text-xs uppercase tracking-[0.24em] text-[#F59E0B]">Selected version</p>
                 {selectedVersion ? (
                   <>
                     <h2 className="mt-2 text-xl font-semibold text-zinc-50">Version {selectedVersion.version}</h2>
-                    <p className="mt-1 text-sm text-zinc-400">
-                      {selectedVersion.message || 'No commit message'}
-                    </p>
+                    <p className="mt-1 text-sm text-zinc-400">{selectedVersion.message || 'No commit message'}</p>
                   </>
                 ) : (
                   <h2 className="mt-2 text-xl font-semibold text-zinc-50">No version selected</h2>
@@ -233,9 +286,7 @@ export default function PromptDetailClient({ prompt: initialPrompt }: { prompt: 
                     {selectedVersion.model}
                   </span>
                 )}
-                <Button variant="outline" onClick={handleCopy} disabled={!selectedVersion}>
-                  {copied ? 'Copied' : 'Copy content'}
-                </Button>
+                {selectedVersion && <CopyButton value={selectedVersion.content} label="Copy content" copiedLabel="Copied" />}
               </div>
             </div>
             <div className="mt-5 rounded-3xl border border-[#1f1f1f] bg-[#0b0b0b] p-4 md:p-5">
@@ -305,13 +356,12 @@ export default function PromptDetailClient({ prompt: initialPrompt }: { prompt: 
             <div>
               <p className="text-xs uppercase tracking-[0.24em] text-[#F59E0B]">Diff viewer</p>
               <h2 className="mt-2 text-xl font-semibold text-zinc-50">Compare prompt revisions</h2>
+              <p className="mt-1 text-sm text-zinc-400">Select any two versions for a unified diff with added lines in green and removed lines in red.</p>
             </div>
 
             <div className="mt-5 grid gap-4 lg:grid-cols-[1fr_auto_1fr] lg:items-end">
               <div>
-                <label className="mb-2 block text-xs font-medium uppercase tracking-[0.2em] text-zinc-500">
-                  Base version
-                </label>
+                <label className="mb-2 block text-xs font-medium uppercase tracking-[0.2em] text-zinc-500">Base version</label>
                 <select
                   value={selectedVersion?.id ?? ''}
                   onChange={(event) => setSelectedVersionId(event.target.value)}
@@ -326,9 +376,7 @@ export default function PromptDetailClient({ prompt: initialPrompt }: { prompt: 
               </div>
               <div className="pb-3 text-center text-zinc-600">vs</div>
               <div>
-                <label className="mb-2 block text-xs font-medium uppercase tracking-[0.2em] text-zinc-500">
-                  Compare with
-                </label>
+                <label className="mb-2 block text-xs font-medium uppercase tracking-[0.2em] text-zinc-500">Compare with</label>
                 <select
                   value={compareVersion?.id ?? ''}
                   onChange={(event) => setCompareVersionId(event.target.value)}

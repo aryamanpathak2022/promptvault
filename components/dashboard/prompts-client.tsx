@@ -22,6 +22,7 @@ interface PromptSummary {
   createdAt: string
   updatedAt: string
   versionCount: number
+  searchableText: string
   latestVersion: VersionSummary | null
 }
 
@@ -36,20 +37,28 @@ function formatDate(dateString: string) {
 export default function PromptsClient({ initialPrompts }: { initialPrompts: PromptSummary[] }) {
   const [prompts, setPrompts] = useState(initialPrompts)
   const [search, setSearch] = useState('')
+  const [tagFilter, setTagFilter] = useState('all')
   const [showCreate, setShowCreate] = useState(false)
+
+  const allTags = useMemo(() => {
+    return Array.from(new Set(prompts.flatMap((prompt) => prompt.tags))).sort((a, b) => a.localeCompare(b))
+  }, [prompts])
 
   const filteredPrompts = useMemo(() => {
     const query = search.trim().toLowerCase()
-    if (!query) return prompts
 
     return prompts.filter((prompt) => {
-      return (
+      const matchesSearch =
+        !query ||
         prompt.name.toLowerCase().includes(query) ||
-        prompt.tags.some((tag) => tag.toLowerCase().includes(query)) ||
-        prompt.latestVersion?.message?.toLowerCase().includes(query)
-      )
+        prompt.searchableText.toLowerCase().includes(query) ||
+        prompt.tags.some((tag) => tag.toLowerCase().includes(query))
+
+      const matchesTag = tagFilter === 'all' || prompt.tags.includes(tagFilter)
+
+      return matchesSearch && matchesTag
     })
-  }, [prompts, search])
+  }, [prompts, search, tagFilter])
 
   const handleCreated = (prompt: PromptSummary) => {
     setPrompts((current) => [prompt, ...current])
@@ -64,24 +73,16 @@ export default function PromptsClient({ initialPrompts }: { initialPrompts: Prom
             <p className="text-xs uppercase tracking-[0.24em] text-[#F59E0B]">Dashboard</p>
             <h1 className="mt-2 text-2xl font-semibold text-zinc-50">Your prompt library</h1>
             <p className="mt-1 text-sm text-zinc-400">
-              Browse prompts, inspect versions, and keep every iteration in one place.
+              Browse prompts, filter by tag, and search across names and version content in real time.
             </p>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <label className="relative block">
-              <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <circle cx="7" cy="7" r="4.5" stroke="currentColor" strokeWidth="1.4" />
-                  <path d="M10.5 10.5L14 14" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-                </svg>
-              </span>
-              <input
-                value={search}
-                onChange={(event) => setSearch(event.target.value)}
-                placeholder="Search prompts or tags"
-                className="h-11 w-full rounded-xl border border-[#2a2a2a] bg-[#111111] pl-10 pr-4 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-[#F59E0B]/60 focus:outline-none sm:w-72"
-              />
-            </label>
+            <Link
+              href="/explore"
+              className="inline-flex h-11 items-center justify-center rounded-xl border border-[#2a2a2a] bg-[#111111] px-4 text-sm font-medium text-zinc-200 transition-colors hover:border-[#F59E0B]/40 hover:text-zinc-50"
+            >
+              Explore public prompts
+            </Link>
             <Button onClick={() => setShowCreate(true)} className="gap-2">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                 <path d="M7 2v10M2 7h10" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
@@ -105,11 +106,40 @@ export default function PromptsClient({ initialPrompts }: { initialPrompts: Prom
             </p>
           </div>
           <div className="rounded-2xl border border-[#1f1f1f] bg-[#101010] p-5">
-            <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Last updated</p>
-            <p className="mt-3 text-lg font-semibold text-zinc-50">
-              {prompts[0] ? formatDate(prompts[0].updatedAt) : 'No prompts yet'}
+            <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Public prompts</p>
+            <p className="mt-3 text-3xl font-semibold text-zinc-50">
+              {prompts.filter((prompt) => prompt.isPublic).length}
             </p>
           </div>
+        </div>
+
+        <div className="mb-6 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <label className="relative block max-w-xl flex-1">
+            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <circle cx="7" cy="7" r="4.5" stroke="currentColor" strokeWidth="1.4" />
+                <path d="M10.5 10.5L14 14" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+              </svg>
+            </span>
+            <input
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="Search by prompt name, tag, or content"
+              className="h-11 w-full rounded-xl border border-[#2a2a2a] bg-[#111111] pl-10 pr-4 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-[#F59E0B]/60 focus:outline-none"
+            />
+          </label>
+          <select
+            value={tagFilter}
+            onChange={(event) => setTagFilter(event.target.value)}
+            className="h-11 rounded-xl border border-[#2a2a2a] bg-[#111111] px-4 text-sm text-zinc-100 focus:border-[#F59E0B]/60 focus:outline-none"
+          >
+            <option value="all">All tags</option>
+            {allTags.map((tag) => (
+              <option key={tag} value={tag}>
+                {tag}
+              </option>
+            ))}
+          </select>
         </div>
 
         {filteredPrompts.length === 0 ? (
@@ -121,14 +151,14 @@ export default function PromptsClient({ initialPrompts }: { initialPrompts: Prom
               </svg>
             </div>
             <h2 className="mt-5 text-xl font-semibold text-zinc-50">
-              {search ? 'No prompts match your search' : 'Create your first prompt'}
+              {search || tagFilter !== 'all' ? 'No prompts match your filters' : 'Create your first prompt'}
             </h2>
             <p className="mx-auto mt-2 max-w-md text-sm text-zinc-400">
-              {search
-                ? 'Try a different prompt name, commit message, or tag.'
+              {search || tagFilter !== 'all'
+                ? 'Try a different search term or tag filter.'
                 : 'PromptVault keeps every revision organized so you can diff, copy, and ship prompts with confidence.'}
             </p>
-            {!search && (
+            {!search && tagFilter === 'all' && (
               <Button onClick={() => setShowCreate(true)} className="mt-6 gap-2">
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                   <path d="M7 2v10M2 7h10" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
@@ -147,10 +177,15 @@ export default function PromptsClient({ initialPrompts }: { initialPrompts: Prom
               >
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <p className="text-lg font-semibold text-zinc-50">{prompt.name}</p>
-                    <p className="mt-1 text-sm text-zinc-400">
-                      Updated {formatDate(prompt.updatedAt)}
-                    </p>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="text-lg font-semibold text-zinc-50">{prompt.name}</p>
+                      {prompt.isPublic && (
+                        <span className="rounded-full border border-[#F59E0B]/20 bg-[#F59E0B]/10 px-2.5 py-1 text-[11px] font-medium text-[#f8c86f]">
+                          Public
+                        </span>
+                      )}
+                    </div>
+                    <p className="mt-1 text-sm text-zinc-400">Updated {formatDate(prompt.updatedAt)}</p>
                   </div>
                   <span className="rounded-full border border-[#F59E0B]/20 bg-[#F59E0B]/10 px-2.5 py-1 text-xs font-medium text-[#f8c86f]">
                     {prompt.versionCount} version{prompt.versionCount === 1 ? '' : 's'}
@@ -172,9 +207,7 @@ export default function PromptsClient({ initialPrompts }: { initialPrompts: Prom
 
                 <div className="mt-5 rounded-2xl border border-[#1f1f1f] bg-[#0b0b0b] p-4">
                   <div className="flex items-center justify-between gap-3 text-xs text-zinc-500">
-                    <span>
-                      {prompt.latestVersion ? `v${prompt.latestVersion.version}` : 'No versions'}
-                    </span>
+                    <span>{prompt.latestVersion ? `v${prompt.latestVersion.version}` : 'No versions'}</span>
                     <span>{prompt.latestVersion?.model ?? 'No model tag'}</span>
                   </div>
                   <p className="mt-3 line-clamp-3 whitespace-pre-wrap font-mono text-xs leading-6 text-zinc-400">

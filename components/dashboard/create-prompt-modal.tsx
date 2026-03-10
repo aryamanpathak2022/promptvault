@@ -22,6 +22,7 @@ interface PromptSummary {
   createdAt: string
   updatedAt: string
   versionCount: number
+  searchableText: string
   latestVersion: VersionSummary | null
 }
 
@@ -36,6 +37,7 @@ export default function CreatePromptModal({ onClose, onCreated }: Props) {
   const [tags, setTags] = useState('')
   const [message, setMessage] = useState('Initial version')
   const [model, setModel] = useState('')
+  const [isPublic, setIsPublic] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -60,6 +62,7 @@ export default function CreatePromptModal({ onClose, onCreated }: Props) {
           tags: tags.split(',').map((tag) => tag.trim()).filter(Boolean),
           message: message.trim(),
           model: model.trim(),
+          isPublic,
         }),
       })
 
@@ -85,7 +88,7 @@ export default function CreatePromptModal({ onClose, onCreated }: Props) {
             <p className="text-xs uppercase tracking-[0.24em] text-[#F59E0B]">New prompt</p>
             <h2 className="mt-2 text-xl font-semibold text-zinc-50">Create a prompt with its first version</h2>
             <p className="mt-1 text-sm text-zinc-400">
-              Add the prompt body now, then keep iterating from the detail page.
+              Add the prompt body now, then keep iterating from the detail page or share it publicly.
             </p>
           </div>
           <button
@@ -102,22 +105,13 @@ export default function CreatePromptModal({ onClose, onCreated }: Props) {
               <label className="mb-2 block text-xs font-medium uppercase tracking-[0.2em] text-zinc-500">
                 Prompt name
               </label>
-              <Input
-                value={name}
-                onChange={(event) => setName(event.target.value)}
-                placeholder="code-reviewer"
-                autoFocus
-              />
+              <Input value={name} onChange={(event) => setName(event.target.value)} placeholder="code-reviewer" autoFocus />
             </div>
             <div>
               <label className="mb-2 block text-xs font-medium uppercase tracking-[0.2em] text-zinc-500">
                 Model tag
               </label>
-              <Input
-                value={model}
-                onChange={(event) => setModel(event.target.value)}
-                placeholder="gpt-4.1 / claude-3.7"
-              />
+              <Input value={model} onChange={(event) => setModel(event.target.value)} placeholder="gpt-4.1 / claude-3.7" />
             </div>
           </div>
 
@@ -139,23 +133,31 @@ export default function CreatePromptModal({ onClose, onCreated }: Props) {
               <label className="mb-2 block text-xs font-medium uppercase tracking-[0.2em] text-zinc-500">
                 Commit message
               </label>
-              <Input
-                value={message}
-                onChange={(event) => setMessage(event.target.value)}
-                placeholder="Initial version"
-              />
+              <Input value={message} onChange={(event) => setMessage(event.target.value)} placeholder="Initial version" />
             </div>
             <div>
               <label className="mb-2 block text-xs font-medium uppercase tracking-[0.2em] text-zinc-500">
                 Tags
               </label>
-              <Input
-                value={tags}
-                onChange={(event) => setTags(event.target.value)}
-                placeholder="production, support, prompt"
-              />
+              <Input value={tags} onChange={(event) => setTags(event.target.value)} placeholder="production, support, prompt" />
             </div>
           </div>
+
+          <label className="flex items-center justify-between rounded-2xl border border-[#1f1f1f] bg-[#111111] px-4 py-3">
+            <div>
+              <p className="text-sm font-medium text-zinc-100">Make this prompt public</p>
+              <p className="text-xs text-zinc-500">Public prompts can be explored at `/explore` and shared with a read-only link.</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsPublic((current) => !current)}
+              className={`relative h-7 w-12 rounded-full transition-colors ${isPublic ? 'bg-[#F59E0B]' : 'bg-[#27272a]'}`}
+            >
+              <span
+                className={`absolute top-1 h-5 w-5 rounded-full bg-white transition-transform ${isPublic ? 'translate-x-6' : 'translate-x-1'}`}
+              />
+            </button>
+          </label>
 
           {error && <p className="rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-300">{error}</p>}
 

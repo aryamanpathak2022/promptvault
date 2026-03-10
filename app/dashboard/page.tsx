@@ -18,13 +18,7 @@ export default async function DashboardPage() {
   const prompts = await prisma.prompt.findMany({
     where: { userId: user.id },
     include: {
-      versions: {
-        orderBy: { version: 'desc' },
-        take: 1,
-      },
-      _count: {
-        select: { versions: true },
-      },
+      versions: { orderBy: { version: 'desc' } },
     },
     orderBy: { updatedAt: 'desc' },
   })
@@ -36,7 +30,8 @@ export default async function DashboardPage() {
     isPublic: prompt.isPublic,
     createdAt: prompt.createdAt.toISOString(),
     updatedAt: prompt.updatedAt.toISOString(),
-    versionCount: prompt._count.versions,
+    versionCount: prompt.versions.length,
+    searchableText: [prompt.name, prompt.tags, ...prompt.versions.map((version) => version.content)].join(' '),
     latestVersion: prompt.versions[0]
       ? {
           id: prompt.versions[0].id,

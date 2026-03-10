@@ -61,7 +61,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     where: { id, userId: ctx.userId },
     data: {
       ...(name ? { name } : {}),
-      ...(tags ? { tags: JSON.stringify(tags) } : {}),
+      ...(tags !== undefined ? { tags: JSON.stringify(tags) } : {}),
       ...(isPublic !== undefined ? { isPublic } : {}),
     },
   })
