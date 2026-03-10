@@ -1,210 +1,203 @@
 'use client'
 
-import { useState } from 'react'
+        import { useState } from 'react'
+        import { Button } from '@/components/ui/button'
+        import { Input } from '@/components/ui/input'
 
-interface ApiKey {
-  id: string
-  name: string
-  key: string
-  createdAt: string
-  lastUsed: string | null
-}
+        interface ApiKey {
+          id: string
+          name: string
+          key: string
+          createdAt: string
+          lastUsed: string | null
+        }
 
-export default function SettingsClient({ initialKeys }: { initialKeys: ApiKey[] }) {
-  const [keys, setKeys] = useState(initialKeys)
-  const [newKeyName, setNewKeyName] = useState('')
-  const [creating, setCreating] = useState(false)
-  const [newKey, setNewKey] = useState<string | null>(null)
-  const [copied, setCopied] = useState(false)
-  const [copiedId, setCopiedId] = useState<string | null>(null)
+        function formatDate(dateString: string) {
+          return new Intl.DateTimeFormat('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+          }).format(new Date(dateString))
+        }
 
-  const handleCreate = async () => {
-    if (!newKeyName.trim()) return
-    setCreating(true)
-    try {
-      const res = await fetch('/api/keys', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: newKeyName.trim() }),
-      })
-      const data = await res.json()
-      setNewKey(data.key)
-      setKeys(prev => [{ id: data.id, name: data.name, key: data.key.slice(0, 8) + '...' + data.key.slice(-4), createdAt: data.createdAt, lastUsed: null }, ...prev])
-      setNewKeyName('')
-    } finally {
-      setCreating(false)
-    }
-  }
+        export default function SettingsClient({ initialKeys }: { initialKeys: ApiKey[] }) {
+          const [keys, setKeys] = useState(initialKeys)
+          const [newKeyName, setNewKeyName] = useState('')
+          const [creating, setCreating] = useState(false)
+          const [revealedKey, setRevealedKey] = useState<string | null>(null)
+          const [copied, setCopied] = useState(false)
+          const [error, setError] = useState('')
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Delete this API key? This cannot be undone.')) return
-    await fetch('/api/keys', {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id }),
-    })
-    setKeys(prev => prev.filter(k => k.id !== id))
-  }
+          const handleCreate = async () => {
+            if (!newKeyName.trim()) return
 
-  const copyKey = (text: string, id?: string) => {
-    navigator.clipboard.writeText(text)
-    if (id) {
-      setCopiedId(id)
-      setTimeout(() => setCopiedId(null), 2000)
-    } else {
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    }
-  }
+            setCreating(true)
+            setError('')
 
-  return (
-    <div className="flex-1 min-w-0" style={{ background: '#080808' }}>
-      {/* Header */}
-      <div className="px-8 py-6 border-b sticky top-0 z-10" style={{ borderColor: '#242424', background: 'rgba(8,8,8,0.9)', backdropFilter: 'blur(12px)' }}>
-        <h1 className="text-lg font-semibold text-white">Settings</h1>
-        <p className="text-xs mt-0.5" style={{ color: '#888' }}>Manage your API keys and CLI access</p>
-      </div>
+            try {
+              const response = await fetch('/api/keys', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: newKeyName.trim() }),
+              })
 
-      <div className="px-8 py-6 max-w-3xl space-y-6">
-        {/* New key revealed */}
-        {newKey && (
-          <div className="p-5 rounded-xl" style={{ border: '1px solid rgba(74,222,128,0.3)', background: 'rgba(74,222,128,0.05)' }}>
-            <div className="flex items-start justify-between mb-3">
-              <div>
-                <p className="text-sm font-medium" style={{ color: '#4ADE80' }}>✓ API key created</p>
-                <p className="text-xs mt-1" style={{ color: '#888' }}>Save this key now — you won&apos;t see it again.</p>
+              const data = await response.json()
+              if (!response.ok) throw new Error(data.error ?? 'Failed to create API key.')
+
+              setRevealedKey(data.key)
+              setKeys((current) => [
+                {
+                  id: data.id,
+                  name: data.name,
+                  key: data.maskedKey,
+                  createdAt: data.createdAt,
+                  lastUsed: data.lastUsed,
+                },
+                ...current,
+              ])
+              setNewKeyName('')
+            } catch (caughtError) {
+              setError(caughtError instanceof Error ? caughtError.message : 'Failed to create API key.')
+            } finally {
+              setCreating(false)
+            }
+          }
+
+          const handleDelete = async (id: string) => {
+            if (!window.confirm('Revoke this API key? This cannot be undone.')) return
+
+            const response = await fetch('/api/keys', {
+              method: 'DELETE',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ id }),
+            })
+
+            if (response.ok) {
+              setKeys((current) => current.filter((key) => key.id !== id))
+            }
+          }
+
+          const copyRevealedKey = async () => {
+            if (!revealedKey) return
+            await navigator.clipboard.writeText(revealedKey)
+            setCopied(true)
+            window.setTimeout(() => setCopied(false), 1500)
+          }
+
+          return (
+            <div className="min-h-screen bg-[#080808]">
+              <div className="border-b border-[#1d1d1d] bg-[#0c0c0c]/90 px-5 py-5 backdrop-blur md:px-8">
+                <p className="text-xs uppercase tracking-[0.24em] text-[#F59E0B]">Settings</p>
+                <h1 className="mt-2 text-2xl font-semibold text-zinc-50">API keys</h1>
+                <p className="mt-1 text-sm text-zinc-400">
+                  Manage CLI access for PromptVault and keep track of active integrations.
+                </p>
               </div>
-              <button onClick={() => setNewKey(null)} className="text-xl leading-none transition-colors" style={{ color: '#888' }}>×</button>
-            </div>
-            <div className="flex items-center gap-2">
-              <code className="flex-1 px-4 py-3 rounded-xl text-xs font-mono break-all" style={{ background: '#111111', border: '1px solid #242424', color: '#4ADE80' }}>{newKey}</code>
-              <button
-                onClick={() => copyKey(newKey)}
-                className="px-3 py-3 rounded-xl text-xs font-medium shrink-0 transition-all"
-                style={{ border: '1px solid #242424', color: copied ? '#4ADE80' : '#888', background: '#161616' }}
-              >
-                {copied ? '✓ Copied' : 'Copy'}
-              </button>
-            </div>
-          </div>
-        )}
 
-        {/* Create key */}
-        <div className="rounded-xl overflow-hidden" style={{ border: '1px solid #242424' }}>
-          <div className="px-6 py-4 border-b" style={{ borderColor: '#242424', background: '#111111' }}>
-            <h2 className="font-semibold text-white text-sm">Create API key</h2>
-            <p className="text-xs mt-1" style={{ color: '#888' }}>API keys allow CLI and programmatic access to your vault.</p>
-          </div>
-          <div className="px-6 py-5" style={{ background: '#0d0d0d' }}>
-            <div className="flex items-center gap-3">
-              <input
-                value={newKeyName}
-                onChange={e => setNewKeyName(e.target.value)}
-                placeholder="Key name (e.g. laptop, CI/CD)"
-                className="flex-1 px-4 py-2.5 rounded-xl text-sm text-white placeholder-[#888] outline-none"
-                style={{ border: '1px solid #242424', background: '#111111' }}
-                onFocus={e => { e.currentTarget.style.borderColor = 'rgba(245,158,11,0.5)'; }}
-                onBlur={e => { e.currentTarget.style.borderColor = '#242424'; }}
-                onKeyDown={e => e.key === 'Enter' && handleCreate()}
-              />
-              <button
-                onClick={handleCreate}
-                disabled={creating || !newKeyName.trim()}
-                className="px-4 py-2.5 rounded-xl text-sm font-medium text-white disabled:opacity-40 transition-all shrink-0"
-                style={{ background: '#F59E0B' }}
-                onMouseEnter={e => { if (!creating && newKeyName.trim()) (e.currentTarget as HTMLButtonElement).style.background = '#D97706'; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = '#F59E0B'; }}
-              >
-                {creating ? 'Creating...' : 'Create key'}
-              </button>
-            </div>
-          </div>
-        </div>
+              <div className="grid gap-6 px-5 py-6 md:px-8 xl:grid-cols-[minmax(0,1fr)_360px]">
+                <div className="space-y-6">
+                  {revealedKey && (
+                    <section className="rounded-3xl border border-emerald-500/20 bg-emerald-500/10 p-5">
+                      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                        <div>
+                          <p className="text-sm font-semibold text-emerald-300">API key created</p>
+                          <p className="mt-1 text-sm text-emerald-100/70">
+                            Copy this key now. For security, PromptVault only shows the full value once.
+                          </p>
+                        </div>
+                        <Button variant="outline" onClick={() => setRevealedKey(null)}>
+                          Dismiss
+                        </Button>
+                      </div>
+                      <div className="mt-4 rounded-2xl border border-emerald-500/20 bg-[#0b0b0b] p-4 font-mono text-sm break-all text-emerald-200">
+                        {revealedKey}
+                      </div>
+                      <div className="mt-4 flex justify-end">
+                        <Button onClick={copyRevealedKey}>{copied ? 'Copied' : 'Copy key'}</Button>
+                      </div>
+                    </section>
+                  )}
 
-        {/* Keys list */}
-        <div className="rounded-xl overflow-hidden" style={{ border: '1px solid #242424' }}>
-          <div className="px-6 py-4 border-b" style={{ borderColor: '#242424', background: '#111111' }}>
-            <h2 className="font-semibold text-white text-sm">Your API keys</h2>
-            <p className="text-xs mt-1" style={{ color: '#888' }}>
-              Use with the CLI: <code className="font-mono px-1.5 py-0.5 rounded" style={{ background: '#161616', color: '#FCD34D' }}>PROMPTVAULT_API_KEY=pv_...</code>
-            </p>
-          </div>
-          <div style={{ background: '#0d0d0d' }}>
-            {keys.length === 0 ? (
-              <div className="px-6 py-12 text-center text-sm" style={{ color: '#888' }}>No API keys yet</div>
-            ) : (
-              <div className="divide-y" style={{ borderColor: '#242424' }}>
-                {keys.map(key => (
-                  <div key={key.id} className="flex items-center justify-between px-6 py-4">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <div className="w-2 h-2 rounded-full" style={{ background: '#4ADE80' }} />
-                        <span className="text-sm font-medium text-white">{key.name}</span>
-                      </div>
-                      <code className="text-xs font-mono" style={{ color: '#888' }}>{key.key}</code>
-                      <div className="text-xs mt-1" style={{ color: '#444' }}>
-                        Created {new Date(key.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                        {key.lastUsed && ` · Last used ${new Date(key.lastUsed).toLocaleDateString()}`}
-                      </div>
+                  <section className="rounded-3xl border border-[#1f1f1f] bg-[#101010] p-5 md:p-6">
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.24em] text-[#F59E0B]">Create key</p>
+                      <h2 className="mt-2 text-xl font-semibold text-zinc-50">Generate a new API key</h2>
+                      <p className="mt-1 text-sm text-zinc-400">
+                        Keys can be used by the CLI or external scripts to read and update your prompt vault.
+                      </p>
                     </div>
-                    <div className="flex items-center gap-2 ml-4">
-                      <button
-                        onClick={() => copyKey(key.key, key.id)}
-                        className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
-                        style={{ border: '1px solid #242424', color: copiedId === key.id ? '#4ADE80' : '#888', background: 'transparent' }}
-                      >
-                        {copiedId === key.id ? '✓' : 'Copy'}
-                      </button>
-                      <button
-                        onClick={() => handleDelete(key.id)}
-                        className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
-                        style={{ border: '1px solid rgba(248,113,113,0.3)', color: '#F87171', background: 'rgba(248,113,113,0.06)' }}
-                        onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(248,113,113,0.12)'; }}
-                        onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(248,113,113,0.06)'; }}
-                      >
-                        Revoke
-                      </button>
+                    <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+                      <Input
+                        value={newKeyName}
+                        onChange={(event) => setNewKeyName(event.target.value)}
+                        placeholder="e.g. local-dev, CI runner"
+                        onKeyDown={(event) => {
+                          if (event.key === 'Enter') handleCreate()
+                        }}
+                      />
+                      <Button onClick={handleCreate} disabled={creating || !newKeyName.trim()}>
+                        {creating ? 'Creating...' : 'Create key'}
+                      </Button>
                     </div>
-                  </div>
-                ))}
+                    {error && <p className="mt-4 rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-300">{error}</p>}
+                  </section>
+
+                  <section className="rounded-3xl border border-[#1f1f1f] bg-[#101010] p-5 md:p-6">
+                    <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+                      <div>
+                        <p className="text-xs uppercase tracking-[0.24em] text-[#F59E0B]">Active keys</p>
+                        <h2 className="mt-2 text-xl font-semibold text-zinc-50">Your API access list</h2>
+                      </div>
+                      <p className="text-sm text-zinc-500">{keys.length} total key{keys.length === 1 ? '' : 's'}</p>
+                    </div>
+
+                    <div className="mt-5 space-y-3">
+                      {keys.length === 0 ? (
+                        <div className="rounded-3xl border border-dashed border-[#2a2a2a] bg-[#0f0f0f] px-6 py-12 text-center text-sm text-zinc-500">
+                          No API keys yet. Create one to connect the PromptVault CLI.
+                        </div>
+                      ) : (
+                        keys.map((key) => (
+                          <div key={key.id} className="rounded-2xl border border-[#222222] bg-[#121212] p-4">
+                            <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <div className="h-2.5 w-2.5 rounded-full bg-[#F59E0B]" />
+                                  <p className="text-sm font-semibold text-zinc-100">{key.name}</p>
+                                </div>
+                                <p className="mt-2 font-mono text-xs text-zinc-400">{key.key}</p>
+                                <p className="mt-2 text-xs text-zinc-500">
+                                  Created {formatDate(key.createdAt)}
+                                  {key.lastUsed ? ` • Last used ${formatDate(key.lastUsed)}` : ' • Never used'}
+                                </p>
+                              </div>
+                              <Button variant="destructive" size="sm" onClick={() => handleDelete(key.id)}>
+                                Revoke
+                              </Button>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </section>
+                </div>
+
+                <aside className="space-y-6 xl:sticky xl:top-6 xl:self-start">
+                  <section className="rounded-3xl border border-[#1f1f1f] bg-[#101010] p-5 md:p-6">
+                    <p className="text-xs uppercase tracking-[0.24em] text-[#F59E0B]">CLI setup</p>
+                    <h2 className="mt-2 text-xl font-semibold text-zinc-50">Use PromptVault from your terminal</h2>
+                    <div className="mt-5 rounded-2xl border border-[#1f1f1f] bg-[#0b0b0b] p-4 font-mono text-xs leading-6 text-zinc-300">
+                      npm install -g promptvault
+
+export PROMPTVAULT_API_KEY=pv_...
+
+pvault list
+pvault save "sales-agent" --file ./prompt.txt
+pvault diff sales-agent v1 v2
+                    </div>
+                  </section>
+                </aside>
               </div>
-            )}
-          </div>
-        </div>
-
-        {/* CLI Usage */}
-        <div className="rounded-xl overflow-hidden" style={{ border: '1px solid #242424' }}>
-          <div className="px-6 py-4 border-b" style={{ borderColor: '#242424', background: '#111111' }}>
-            <h2 className="font-semibold text-white text-sm">CLI Usage</h2>
-            <p className="text-xs mt-1" style={{ color: '#888' }}>Install and configure the PromptVault CLI</p>
-          </div>
-          <div className="px-6 py-5" style={{ background: '#0d0d0d' }}>
-            <pre className="p-5 rounded-xl text-xs font-mono overflow-x-auto leading-relaxed" style={{ border: '1px solid #242424', background: '#111111', color: '#4ADE80' }}>{`# Install
-npm install -g pvault
-
-# Set your API key
-export PROMPTVAULT_API_KEY=pv_your_key_here
-
-# Save a prompt from file
-pv save "code-reviewer" --file ./prompt.txt
-
-# Or save from stdin
-echo "Your prompt text" | pv save "my-prompt"
-
-# List all prompts
-pv list
-
-# Diff two versions
-pv diff code-reviewer v1 v2
-
-# Load a prompt
-pv load "code-reviewer"
-
-# MCP server (for Claude/Cursor)
-pv mcp-server`}</pre>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
+            </div>
+          )
+        }

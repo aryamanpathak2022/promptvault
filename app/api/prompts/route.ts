@@ -2,8 +2,40 @@ import { NextResponse } from 'next/server'
 import { getAuthContext } from '@/lib/api-auth'
 import { prisma } from '@/lib/prisma'
 
+function parseTags(tags: string) {
+  try {
+    return JSON.parse(tags || '[]') as string[]
+  } catch {
+    return []
+  }
+}
+
+function serializeVersion(version: any) {
+  return {
+    id: version.id,
+    content: version.content,
+    version: version.version,
+    message: version.message,
+    model: version.model,
+    createdAt: version.createdAt.toISOString(),
+  }
+}
+
+function serializePromptSummary(prompt: any) {
+  return {
+    id: prompt.id,
+    name: prompt.name,
+    tags: parseTags(prompt.tags),
+    isPublic: prompt.isPublic,
+    createdAt: prompt.createdAt.toISOString(),
+    updatedAt: prompt.updatedAt.toISOString(),
+    versionCount: prompt._count.versions,
+    latestVersion: prompt.versions[0] ? serializeVersion(prompt.versions[0]) : null,
+  }
+}
+
 export async function GET(req: Request) {
-  const ctx = await getAuthContext(req as any)
+  const ctx = await getAuthContext(req)
   if (!ctx) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const prompts = await prisma.prompt.findMany({
@@ -13,22 +45,30 @@ export async function GET(req: Request) {
         orderBy: { version: 'desc' },
         take: 1,
       },
+      _count: {
+        select: { versions: true },
+      },
     },
     orderBy: { updatedAt: 'desc' },
   })
 
-  return NextResponse.json(prompts)
+  return NextResponse.json(prompts.map(serializePromptSummary))
 }
 
 export async function POST(req: Request) {
-  const ctx = await getAuthContext(req as any)
+  const ctx = await getAuthContext(req)
   if (!ctx) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const body = await req.json()
-  const { name, content, tags = [], message, model, isPublic = false } = body
+  const name = typeof body.name === 'string' ? body.name.trim() : ''
+  const content = typeof body.content === 'string' ? body.content.trim() : ''
+  const tags = Array.isArray(body.tags) ? body.tags.filter((tag: unknown) => typeof tag === 'string') : []
+  const message = typeof body.message === 'string' ? body.message.trim() : ''
+  const model = typeof body.model === 'string' ? body.model.trim() : ''
+  const isPublic = Boolean(body.isPublic)
 
   if (!name || !content) {
-    return NextResponse.json({ error: 'name and content required' }, { status: 400 })
+    return NextResponse.json({ error: 'Name and content are required.' }, { status: 400 })
   }
 
   const prompt = await prisma.prompt.create({
@@ -42,12 +82,20 @@ export async function POST(req: Request) {
           content,
           message: message || 'Initial version',
           version: 1,
-          model,
+          model: model || null,
         },
       },
     },
-    include: { versions: true },
+    include: {
+      versions: {
+        orderBy: { version: 'desc' },
+        take: 1,
+      },
+      _count: {
+        select: { versions: true },
+      },
+    },
   })
 
-  return NextResponse.json(prompt, { status: 201 })
+  return NextResponse.json(serializePromptSummary(prompt), { status: 201 })
 }

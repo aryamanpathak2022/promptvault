@@ -1,32 +1,52 @@
-import { auth } from '@/lib/auth'
-import { prisma } from '@/lib/prisma'
-import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import PromptsClient from '@/components/dashboard/prompts-client'
+import { getCurrentUser } from '@/lib/current-user'
+import { prisma } from '@/lib/prisma'
+
+function parseTags(tags: string) {
+  try {
+    return JSON.parse(tags || '[]') as string[]
+  } catch {
+    return []
+  }
+}
 
 export default async function DashboardPage() {
-  const session = await auth()
-  if (!session?.user?.id) return null
+  const user = await getCurrentUser()
+  if (!user) redirect('/login')
 
   const prompts = await prisma.prompt.findMany({
-    where: { userId: session.user.id },
+    where: { userId: user.id },
     include: {
       versions: {
         orderBy: { version: 'desc' },
         take: 1,
       },
+      _count: {
+        select: { versions: true },
+      },
     },
     orderBy: { updatedAt: 'desc' },
   })
 
-  const serialized = prompts.map((p: any) => ({
-    ...p,
-    tags: JSON.parse(p.tags || '[]') as string[],
-    createdAt: p.createdAt.toISOString(),
-    updatedAt: p.updatedAt.toISOString(),
-    versions: p.versions.map((v: any) => ({
-      ...v,
-      createdAt: v.createdAt.toISOString(),
-    })),
+  const serialized = prompts.map((prompt) => ({
+    id: prompt.id,
+    name: prompt.name,
+    tags: parseTags(prompt.tags),
+    isPublic: prompt.isPublic,
+    createdAt: prompt.createdAt.toISOString(),
+    updatedAt: prompt.updatedAt.toISOString(),
+    versionCount: prompt._count.versions,
+    latestVersion: prompt.versions[0]
+      ? {
+          id: prompt.versions[0].id,
+          content: prompt.versions[0].content,
+          version: prompt.versions[0].version,
+          message: prompt.versions[0].message,
+          model: prompt.versions[0].model,
+          createdAt: prompt.versions[0].createdAt.toISOString(),
+        }
+      : null,
   }))
 
   return <PromptsClient initialPrompts={serialized} />

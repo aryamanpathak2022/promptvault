@@ -1,22 +1,23 @@
-import { auth } from '@/lib/auth'
-import { prisma } from '@/lib/prisma'
+import { redirect } from 'next/navigation'
 import SettingsClient from '@/components/dashboard/settings-client'
+import { getCurrentUser } from '@/lib/current-user'
+import { prisma } from '@/lib/prisma'
 
 export default async function SettingsPage() {
-  const session = await auth()
-  if (!session?.user?.id) return null
+  const user = await getCurrentUser()
+  if (!user) redirect('/login')
 
   const keys = await prisma.apiKey.findMany({
-    where: { userId: session.user.id },
+    where: { userId: user.id },
     orderBy: { createdAt: 'desc' },
   })
 
-  const serialized = keys.map((k: any) => ({
-    id: k.id,
-    name: k.name,
-    key: k.key.slice(0, 8) + '...' + k.key.slice(-4),
-    createdAt: k.createdAt.toISOString(),
-    lastUsed: k.lastUsed?.toISOString() ?? null,
+  const serialized = keys.map((key) => ({
+    id: key.id,
+    name: key.name,
+    key: `${key.key.slice(0, 8)}...${key.key.slice(-4)}`,
+    createdAt: key.createdAt.toISOString(),
+    lastUsed: key.lastUsed?.toISOString() ?? null,
   }))
 
   return <SettingsClient initialKeys={serialized} />

@@ -1,56 +1,74 @@
-import { NextResponse } from 'next/server'
-import { auth } from '@/lib/auth'
-import { prisma } from '@/lib/prisma'
 import { randomBytes } from 'crypto'
+import { NextResponse } from 'next/server'
+import { getCurrentUser } from '@/lib/current-user'
+import { prisma } from '@/lib/prisma'
 
 export async function GET() {
-  const session = await auth()
-  if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const user = await getCurrentUser()
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const keys = await prisma.apiKey.findMany({
-    where: { userId: session.user.id },
+    where: { userId: user.id },
     orderBy: { createdAt: 'desc' },
     select: { id: true, name: true, createdAt: true, lastUsed: true, key: true },
   })
 
-  // Mask keys
-  const masked = keys.map((k: typeof keys[number]) => ({
-    ...k,
-    key: k.key.slice(0, 8) + '...' + k.key.slice(-4),
-  }))
-
-  return NextResponse.json(masked)
+  return NextResponse.json(
+    keys.map((key) => ({
+      ...key,
+      key: `${key.key.slice(0, 8)}...${key.key.slice(-4)}`,
+    }))
+  )
 }
 
 export async function POST(req: Request) {
-  const session = await auth()
-  if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const user = await getCurrentUser()
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { name } = await req.json()
-  if (!name) return NextResponse.json({ error: 'name required' }, { status: 400 })
+  const body = await req.json()
+  const name = typeof body.name === 'string' ? body.name.trim() : ''
 
-  const key = 'pv_' + randomBytes(32).toString('hex')
+  if (!name) {
+    return NextResponse.json({ error: 'Name is required.' }, { status: 400 })
+  }
 
+  const key = `pv_${randomBytes(32).toString('hex')}`
   const apiKey = await prisma.apiKey.create({
     data: {
-      userId: session.user.id,
+      userId: user.id,
       name,
       key,
     },
   })
 
-  return NextResponse.json({ ...apiKey, key }, { status: 201 })
+  return NextResponse.json(
+    {
+      id: apiKey.id,
+      name: apiKey.name,
+      key,
+      maskedKey: `${key.slice(0, 8)}...${key.slice(-4)}`,
+      createdAt: apiKey.createdAt.toISOString(),
+      lastUsed: apiKey.lastUsed?.toISOString() ?? null,
+    },
+    { status: 201 }
+  )
 }
 
 export async function DELETE(req: Request) {
-  const session = await auth()
-  if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const user = await getCurrentUser()
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { id } = await req.json()
+  const body = await req.json()
+  const id = typeof body.id === 'string' ? body.id : ''
 
-  await prisma.apiKey.deleteMany({
-    where: { id, userId: session.user.id },
+  if (!id) {
+    return NextResponse.json({ error: 'Key id is required.' }, { status: 400 })
+  }
+
+  const result = await prisma.apiKey.deleteMany({
+    where: { id, userId: user.id },
   })
 
+  if (result.count === 0) return NextResponse.json({ error: 'Not found' }, { status: 404 })
   return NextResponse.json({ success: true })
 }

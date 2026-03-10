@@ -1,103 +1,97 @@
 'use client'
 
 import { useMemo } from 'react'
+import { diffLines } from 'diff'
 
 interface Props {
   oldText: string
   newText: string
 }
 
-function computeDiff(oldLines: string[], newLines: string[]) {
-  // Simple LCS-based diff
-  const result: { type: 'same' | 'add' | 'remove'; line: string; oldNum?: number; newNum?: number }[] = []
-  
-  // Use Myers diff algorithm simplified
-  let oi = 0, ni = 0
-  
-  while (oi < oldLines.length || ni < newLines.length) {
-    if (oi < oldLines.length && ni < newLines.length && oldLines[oi] === newLines[ni]) {
-      result.push({ type: 'same', line: oldLines[oi], oldNum: oi + 1, newNum: ni + 1 })
-      oi++; ni++
-    } else {
-      // Look ahead to find match
-      let foundMatch = false
-      for (let lookahead = 1; lookahead <= 3; lookahead++) {
-        if (oi + lookahead < oldLines.length && oldLines[oi + lookahead] === newLines[ni]) {
-          for (let k = 0; k < lookahead; k++) {
-            result.push({ type: 'remove', line: oldLines[oi + k], oldNum: oi + k + 1 })
-          }
-          oi += lookahead
-          foundMatch = true
-          break
-        }
-        if (ni + lookahead < newLines.length && oldLines[oi] === newLines[ni + lookahead]) {
-          for (let k = 0; k < lookahead; k++) {
-            result.push({ type: 'add', line: newLines[ni + k], newNum: ni + k + 1 })
-          }
-          ni += lookahead
-          foundMatch = true
-          break
-        }
-      }
-      if (!foundMatch) {
-        if (oi < oldLines.length) {
-          result.push({ type: 'remove', line: oldLines[oi], oldNum: oi + 1 })
-          oi++
-        }
-        if (ni < newLines.length) {
-          result.push({ type: 'add', line: newLines[ni], newNum: ni + 1 })
-          ni++
-        }
-      }
-    }
-  }
-  
-  return result
+interface DiffRow {
+  type: 'added' | 'removed' | 'unchanged'
+  oldLine: number | null
+  newLine: number | null
+  text: string
+}
+
+function splitLines(value: string) {
+  const lines = value.split('\n')
+  if (lines.length > 1 && lines[lines.length - 1] === '') lines.pop()
+  return lines.length > 0 ? lines : ['']
 }
 
 export default function DiffViewer({ oldText, newText }: Props) {
-  const diff = useMemo(() => {
-    const oldLines = oldText.split('\n')
-    const newLines = newText.split('\n')
-    return computeDiff(oldLines, newLines)
-  }, [oldText, newText])
+  const rows = useMemo(() => {
+    const changes = diffLines(oldText, newText)
+    const output: DiffRow[] = []
+    let oldLine = 1
+    let newLine = 1
 
-  const adds = diff.filter(d => d.type === 'add').length
-  const removes = diff.filter(d => d.type === 'remove').length
+    for (const change of changes) {
+      for (const line of splitLines(change.value)) {
+        if (change.added) {
+          output.push({ type: 'added', oldLine: null, newLine, text: line })
+          newLine += 1
+        } else if (change.removed) {
+          output.push({ type: 'removed', oldLine, newLine: null, text: line })
+          oldLine += 1
+        } else {
+          output.push({ type: 'unchanged', oldLine, newLine, text: line })
+          oldLine += 1
+          newLine += 1
+        }
+      }
+    }
+
+    return output
+  }, [newText, oldText])
+
+  const addedCount = rows.filter((row) => row.type === 'added').length
+  const removedCount = rows.filter((row) => row.type === 'removed').length
+  const changed = addedCount > 0 || removedCount > 0
 
   return (
-    <div className="rounded-xl border border-white/10 overflow-hidden">
-      <div className="flex items-center gap-4 px-4 py-2.5 bg-white/5 border-b border-white/10 text-xs">
-        <span className="text-white/50">Diff</span>
-        <span className="text-emerald-400">+{adds} added</span>
-        <span className="text-red-400">-{removes} removed</span>
+    <div className="overflow-hidden rounded-3xl border border-[#1f1f1f] bg-[#0f0f0f]">
+      <div className="flex flex-wrap items-center gap-3 border-b border-[#1f1f1f] px-4 py-3 text-xs text-zinc-400">
+        <span>Diff</span>
+        <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2 py-1 text-emerald-300">
+          +{addedCount} added
+        </span>
+        <span className="rounded-full border border-red-500/20 bg-red-500/10 px-2 py-1 text-red-300">
+          -{removedCount} removed
+        </span>
+        {!changed && <span className="text-zinc-500">No changes between these versions</span>}
       </div>
       <div className="overflow-x-auto">
-        <table className="w-full font-mono text-xs">
+        <table className="min-w-full border-collapse font-mono text-xs">
           <tbody>
-            {diff.map((line, i) => (
-              <tr key={i} className={
-                line.type === 'add' ? 'bg-emerald-500/10' :
-                line.type === 'remove' ? 'bg-red-500/10' :
-                ''
-              }>
-                <td className="w-10 px-3 py-0.5 text-white/20 text-right select-none border-r border-white/5">
-                  {line.oldNum ?? ''}
+            {rows.map((row, index) => (
+              <tr
+                key={`${row.type}-${index}`}
+                className={
+                  row.type === 'added'
+                    ? 'bg-emerald-500/8'
+                    : row.type === 'removed'
+                      ? 'bg-red-500/8'
+                      : 'bg-transparent'
+                }
+              >
+                <td className="w-14 border-r border-[#1a1a1a] px-3 py-1.5 text-right text-zinc-600">{row.oldLine ?? ''}</td>
+                <td className="w-14 border-r border-[#1a1a1a] px-3 py-1.5 text-right text-zinc-600">{row.newLine ?? ''}</td>
+                <td className="w-8 px-2 py-1.5 text-center text-zinc-500">
+                  {row.type === 'added' ? '+' : row.type === 'removed' ? '-' : ' '}
                 </td>
-                <td className="w-10 px-3 py-0.5 text-white/20 text-right select-none border-r border-white/5">
-                  {line.newNum ?? ''}
-                </td>
-                <td className="px-1 py-0.5 w-5 text-center select-none">
-                  {line.type === 'add' ? <span className="text-emerald-400">+</span> :
-                   line.type === 'remove' ? <span className="text-red-400">-</span> :
-                   <span className="text-white/20"> </span>}
-                </td>
-                <td className={`px-3 py-0.5 whitespace-pre ${
-                  line.type === 'add' ? 'text-emerald-300' :
-                  line.type === 'remove' ? 'text-red-300' :
-                  'text-white/60'
-                }`}>
-                  {line.line || ' '}
+                <td
+                  className={
+                    row.type === 'added'
+                      ? 'whitespace-pre-wrap px-3 py-1.5 text-emerald-200'
+                      : row.type === 'removed'
+                        ? 'whitespace-pre-wrap px-3 py-1.5 text-red-200'
+                        : 'whitespace-pre-wrap px-3 py-1.5 text-zinc-300'
+                  }
+                >
+                  {row.text || ' '}
                 </td>
               </tr>
             ))}
