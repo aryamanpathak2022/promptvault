@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
+import { formatRelativeTime } from '@/lib/format'
 
 function parseTags(tags: string) {
   try {
@@ -26,52 +27,53 @@ export default async function ExplorePage() {
   })
 
   return (
-    <div className="min-h-screen bg-[#080808] px-5 py-10 text-zinc-100 md:px-8">
+    <div className="min-h-screen bg-[#080808] px-4 py-8 text-zinc-100 md:px-6">
       <div className="mx-auto max-w-6xl">
-        <div className="rounded-3xl border border-[#1f1f1f] bg-[#101010] p-6">
-          <p className="text-xs uppercase tracking-[0.24em] text-[#F59E0B]">Explore</p>
-          <h1 className="mt-3 text-3xl font-semibold text-zinc-50">Public prompts from the community</h1>
-          <p className="mt-2 text-sm text-zinc-400">
-            Browse publicly shared prompts, inspect versions, and open any prompt in read-only mode.
-          </p>
+        <div className="rounded-xl border border-[#1b1b1b] bg-[#101010] p-5">
+          <p className="text-[11px] uppercase tracking-[0.18em] text-zinc-500">Explore</p>
+          <h1 className="mt-1.5 text-xl font-semibold text-zinc-50">Public prompts</h1>
+          <p className="mt-1 text-sm text-zinc-500">Browse what other people decided was worth sharing.</p>
         </div>
 
-        <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
           {prompts.map((prompt) => {
             const author = prompt.user.name ?? prompt.user.email ?? 'Anonymous'
             const tags = parseTags(prompt.tags)
+            const latest = prompt.versions[0]
             return (
               <Link
                 key={prompt.id}
                 href={`/p/${prompt.id}`}
-                className="rounded-3xl border border-[#1f1f1f] bg-[#101010] p-5 transition duration-200 hover:-translate-y-0.5 hover:border-[#F59E0B]/35 hover:bg-[#131313]"
+                className="rounded-xl border border-[#1b1b1b] bg-[#101010] p-4 transition-colors hover:border-[#2f2413] hover:bg-[#121212]"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-lg font-semibold text-zinc-50">{prompt.name}</p>
-                    <p className="mt-1 text-sm text-zinc-400">by {author}</p>
+                    <p className="text-sm font-semibold text-zinc-50">{prompt.name}</p>
+                    <p className="mt-1 text-sm text-zinc-500">by {author}</p>
+                    {latest && (
+                      <p className="mt-1 font-mono text-[12px] text-zinc-500">
+                        v{latest.version} · {formatRelativeTime(latest.createdAt)} · {latest.message ?? 'No commit message'}
+                      </p>
+                    )}
                   </div>
-                  <span className="rounded-full border border-[#F59E0B]/20 bg-[#F59E0B]/10 px-2.5 py-1 text-xs font-medium text-[#f8c86f]">
-                    {prompt._count.versions} version{prompt._count.versions === 1 ? '' : 's'}
+                  <span className="rounded-full border border-[#1f1f1f] bg-[#0b0b0b] px-2 py-0.5 text-[11px] text-zinc-400">
+                    {prompt._count.versions}
                   </span>
                 </div>
 
                 {tags.length > 0 && (
-                  <div className="mt-4 flex flex-wrap gap-2">
+                  <div className="mt-3 flex flex-wrap gap-1.5">
                     {tags.map((tag) => (
-                      <span key={tag} className="rounded-full border border-[#2a2a2a] bg-[#151515] px-2.5 py-1 text-xs text-zinc-300">
+                      <span key={tag} className="rounded-full border border-[#222222] px-2 py-0.5 text-[11px] text-zinc-400">
                         {tag}
                       </span>
                     ))}
                   </div>
                 )}
 
-                <div className="mt-5 rounded-2xl border border-[#1f1f1f] bg-[#0b0b0b] p-4">
-                  <p className="text-xs uppercase tracking-[0.18em] text-zinc-500">
-                    {prompt.versions[0]?.model ?? 'Public prompt'}
-                  </p>
-                  <p className="mt-3 line-clamp-3 whitespace-pre-wrap font-mono text-xs leading-6 text-zinc-400">
-                    {prompt.versions[0]?.content ?? 'No content available.'}
+                <div className="mt-3 rounded-lg border border-[#181818] bg-[#0b0b0b] p-3">
+                  <p className="line-clamp-4 whitespace-pre-wrap font-mono text-[12px] leading-5 text-zinc-400">
+                    {latest?.content ?? 'No versions yet. Save your first version above.'}
                   </p>
                 </div>
               </Link>

@@ -52,19 +52,19 @@ export default function DiffViewer({ oldText, newText }: Props) {
   const changed = addedCount > 0 || removedCount > 0
 
   return (
-    <div className="overflow-hidden rounded-3xl border border-[#1f1f1f] bg-[#0f0f0f]">
-      <div className="flex flex-wrap items-center gap-3 border-b border-[#1f1f1f] px-4 py-3 text-xs text-zinc-400">
+    <div className="overflow-hidden rounded-lg border border-[#1f1f1f] bg-[#0b0b0b]">
+      <div className="flex flex-wrap items-center gap-3 border-b border-[#1f1f1f] px-3 py-2 text-[11px] text-zinc-500">
         <span>Diff</span>
-        <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2 py-1 text-emerald-300">
-          +{addedCount} added
+        <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-emerald-300">
+          +{addedCount}
         </span>
-        <span className="rounded-full border border-red-500/20 bg-red-500/10 px-2 py-1 text-red-300">
-          -{removedCount} removed
+        <span className="rounded-full border border-red-500/20 bg-red-500/10 px-2 py-0.5 text-red-300">
+          -{removedCount}
         </span>
-        {!changed && <span className="text-zinc-500">No changes between these versions</span>}
+        {!changed && <span>No changes between these versions</span>}
       </div>
       <div className="overflow-x-auto">
-        <table className="min-w-full border-collapse font-mono text-xs">
+        <table className="min-w-full border-collapse font-mono text-[12px]">
           <tbody>
             {rows.map((row, index) => (
               <tr
@@ -77,18 +77,16 @@ export default function DiffViewer({ oldText, newText }: Props) {
                       : 'bg-transparent'
                 }
               >
-                <td className="w-14 border-r border-[#1a1a1a] px-3 py-1.5 text-right text-zinc-600">{row.oldLine ?? ''}</td>
-                <td className="w-14 border-r border-[#1a1a1a] px-3 py-1.5 text-right text-zinc-600">{row.newLine ?? ''}</td>
-                <td className="w-8 px-2 py-1.5 text-center text-zinc-500">
-                  {row.type === 'added' ? '+' : row.type === 'removed' ? '-' : ' '}
-                </td>
+                <td className="w-12 border-r border-[#151515] px-2 py-1 text-right text-zinc-600">{row.oldLine ?? ''}</td>
+                <td className="w-12 border-r border-[#151515] px-2 py-1 text-right text-zinc-600">{row.newLine ?? ''}</td>
+                <td className="w-6 px-2 py-1 text-center text-zinc-500">{row.type === 'added' ? '+' : row.type === 'removed' ? '-' : ' '}</td>
                 <td
                   className={
                     row.type === 'added'
-                      ? 'whitespace-pre-wrap px-3 py-1.5 text-emerald-200'
+                      ? 'whitespace-pre-wrap px-2 py-1 text-emerald-200'
                       : row.type === 'removed'
-                        ? 'whitespace-pre-wrap px-3 py-1.5 text-red-200'
-                        : 'whitespace-pre-wrap px-3 py-1.5 text-zinc-300'
+                        ? 'whitespace-pre-wrap px-2 py-1 text-red-200'
+                        : 'whitespace-pre-wrap px-2 py-1 text-zinc-300'
                   }
                 >
                   {row.text || ' '}

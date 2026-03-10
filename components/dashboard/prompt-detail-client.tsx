@@ -1,13 +1,15 @@
 'use client'
 
 import Link from 'next/link'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import DiffViewer from './diff-viewer'
 import { Button } from '@/components/ui/button'
 import CopyButton from '@/components/ui/copy-button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import { cn } from '@/lib/utils'
+import { estimateTokens, formatRelativeTime } from '@/lib/format'
 
 interface Version {
   id: string
@@ -28,14 +30,8 @@ interface Prompt {
   versions: Version[]
 }
 
-function formatTimestamp(dateString: string) {
-  return new Intl.DateTimeFormat('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-  }).format(new Date(dateString))
+function versionLabel(version: Version) {
+  return `v${version.version} · ${formatRelativeTime(version.createdAt)} · ${version.message ?? 'No commit message'}`
 }
 
 export default function PromptDetailClient({ prompt: initialPrompt }: { prompt: Prompt }) {
@@ -62,6 +58,8 @@ export default function PromptDetailClient({ prompt: initialPrompt }: { prompt: 
   )
 
   const publicUrl = typeof window === 'undefined' ? `/p/${prompt.id}` : `${window.location.origin}/p/${prompt.id}`
+  const charCount = draftContent.length
+  const tokenCount = estimateTokens(draftContent)
 
   const handleCreateVersion = async () => {
     if (!draftContent.trim()) {
@@ -101,6 +99,18 @@ export default function PromptDetailClient({ prompt: initialPrompt }: { prompt: 
       setSaving(false)
     }
   }
+
+          useEffect(() => {
+            const onKeyDown = (event: KeyboardEvent) => {
+              if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 's') {
+                event.preventDefault()
+                void handleCreateVersion()
+              }
+            }
+
+            window.addEventListener('keydown', onKeyDown)
+            return () => window.removeEventListener('keydown', onKeyDown)
+          }, [draftContent, commitMessage, modelTag, prompt.id, selectedVersion])
 
   const handleTogglePublic = async () => {
     setSharing(true)
@@ -146,257 +156,237 @@ export default function PromptDetailClient({ prompt: initialPrompt }: { prompt: 
 
   return (
     <div className="min-h-screen bg-[#080808]">
-      <div className="border-b border-[#1d1d1d] bg-[#0c0c0c]/90 px-5 py-5 backdrop-blur md:px-8">
-        <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
+      <div className="border-b border-[#171717] bg-[#0c0c0c] px-4 py-4 md:px-6">
+        <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
           <div>
-            <div className="flex items-center gap-2 text-xs text-zinc-500">
+            <div className="flex items-center gap-2 text-[11px] text-zinc-500">
               <Link href="/dashboard" className="transition-colors hover:text-zinc-200">
                 Dashboard
               </Link>
               <span>/</span>
               <span className="text-zinc-300">{prompt.name}</span>
             </div>
-            <h1 className="mt-3 text-2xl font-semibold text-zinc-50">{prompt.name}</h1>
-            <div className="mt-3 flex flex-wrap items-center gap-2 text-sm text-zinc-400">
+            <h1 className="mt-1.5 text-xl font-semibold text-zinc-50">{prompt.name}</h1>
+            <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-zinc-500">
               <span>{prompt.versions.length} versions</span>
-              <span className="text-zinc-600">•</span>
-              <span>Updated {formatTimestamp(prompt.updatedAt)}</span>
+              <span>·</span>
+              <span>{formatRelativeTime(prompt.updatedAt)}</span>
               {prompt.tags.map((tag) => (
-                <span key={tag} className="rounded-full border border-[#2a2a2a] bg-[#141414] px-2.5 py-1 text-xs text-zinc-300">
+                <span key={tag} className="rounded-full border border-[#222222] px-2 py-0.5 text-[11px] text-zinc-400">
                   {tag}
                 </span>
               ))}
             </div>
           </div>
-          <div className="flex flex-wrap gap-3">
-            <Button variant="outline" onClick={loadSelectedIntoDraft}>
-              Use selected as base
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" onClick={loadSelectedIntoDraft} className="h-9 rounded-lg px-3">
+              Use selected
             </Button>
-            <Button variant="destructive" onClick={handleDelete} disabled={deleting}>
-              {deleting ? 'Deleting...' : 'Delete prompt'}
+            <Button variant="destructive" onClick={handleDelete} disabled={deleting} className="h-9 rounded-lg px-3">
+              {deleting ? 'Deleting...' : 'Delete'}
             </Button>
           </div>
         </div>
       </div>
 
-      <div className="grid gap-6 px-5 py-6 md:px-8 xl:grid-cols-[340px_minmax(0,1fr)]">
-        <aside className="space-y-4 xl:sticky xl:top-6 xl:self-start">
-          <div className="rounded-3xl border border-[#1f1f1f] bg-[#101010] p-5">
+      <div className="grid gap-4 px-4 py-4 md:px-6 xl:grid-cols-[320px_minmax(0,1fr)]">
+        <aside className="space-y-4 xl:sticky xl:top-4 xl:self-start">
+          <div className="rounded-xl border border-[#1b1b1b] bg-[#101010] p-4">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="text-xs uppercase tracking-[0.24em] text-[#F59E0B]">Timeline</p>
-                <h2 className="mt-2 text-lg font-semibold text-zinc-50">All versions</h2>
+                <p className="text-[11px] uppercase tracking-[0.18em] text-zinc-500">Timeline</p>
+                <h2 className="mt-1 text-sm font-semibold text-zinc-50">Versions</h2>
               </div>
-              <div className="rounded-full border border-[#F59E0B]/20 bg-[#F59E0B]/10 px-2.5 py-1 text-xs text-[#f8c86f]">
+              <div className="rounded-full border border-[#1f1f1f] bg-[#0b0b0b] px-2 py-0.5 text-[11px] text-zinc-400">
                 {prompt.versions.length}
               </div>
             </div>
-            <div className="mt-5 space-y-3">
-              {prompt.versions.map((version, index) => {
-                const active = version.id === selectedVersion?.id
-                return (
-                  <div
-                    key={version.id}
-                    className={
-                      active
-                        ? 'rounded-2xl border border-[#F59E0B]/30 bg-[#F59E0B]/10 p-4'
-                        : 'rounded-2xl border border-[#222222] bg-[#121212] p-4 transition-colors hover:border-[#F59E0B]/20 hover:bg-[#151515]'
-                    }
-                  >
-                    <button onClick={() => setSelectedVersionId(version.id)} className="w-full text-left">
-                      <div className="flex items-center justify-between gap-3">
-                        <span className="rounded-full border border-[#F59E0B]/20 bg-[#0b0b0b] px-2.5 py-1 font-mono text-xs text-[#f8c86f]">
-                          v{version.version}
-                        </span>
-                        {index === 0 && (
-                          <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-[11px] text-emerald-300">
-                            latest
-                          </span>
-                        )}
+            <div className="mt-3 space-y-2">
+              {prompt.versions.length === 0 ? (
+                <div className="rounded-lg border border-dashed border-[#222222] bg-[#0d0d0d] px-3 py-5 text-sm text-zinc-500">
+                  No versions yet. Save your first version above.
+                </div>
+              ) : (
+                prompt.versions.map((version, index) => {
+                  const active = version.id === selectedVersion?.id
+                  return (
+                    <div
+                      key={version.id}
+                      className={cn(
+                        'rounded-lg border p-3',
+                        active ? 'border-[#2f2413] bg-[#15120d]' : 'border-[#1f1f1f] bg-[#111111]'
+                      )}
+                    >
+                      <button onClick={() => setSelectedVersionId(version.id)} className="w-full text-left">
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="font-mono text-[12px] text-zinc-400">{versionLabel(version)}</p>
+                          {index === 0 && <span className="text-[10px] text-zinc-600">latest</span>}
+                        </div>
+                        <p className="mt-1 text-sm text-zinc-100">{version.message ?? 'No commit message'}</p>
+                        <div className="mt-1 flex items-center gap-2 text-[11px] text-zinc-500">
+                          {version.model && <span className="rounded-full border border-[#222222] px-2 py-0.5 text-zinc-400">{version.model}</span>}
+                        </div>
+                      </button>
+                      <div className="mt-2 flex items-center justify-between gap-2">
+                        <p className="line-clamp-2 whitespace-pre-wrap font-mono text-[12px] leading-5 text-zinc-500">
+                          {version.content}
+                        </p>
+                        <CopyButton value={version.content} label="Copy" copiedLabel="Copied" />
                       </div>
-                      <p className="mt-3 text-sm font-medium text-zinc-100">{version.message || 'No commit message'}</p>
-                      <p className="mt-2 line-clamp-2 whitespace-pre-wrap font-mono text-xs leading-5 text-zinc-500">
-                        {version.content}
-                      </p>
-                    </button>
-                    <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-zinc-500">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span>{formatTimestamp(version.createdAt)}</span>
-                        {version.model && (
-                          <span className="rounded-full border border-[#2a2a2a] px-2 py-0.5 text-zinc-400">{version.model}</span>
-                        )}
-                      </div>
-                      <CopyButton value={version.content} label="Copy" copiedLabel="Copied" />
                     </div>
-                  </div>
-                )
-              })}
+                  )
+                })
+              )}
             </div>
           </div>
         </aside>
 
-        <div className="space-y-6">
-          <section className="rounded-3xl border border-[#1f1f1f] bg-[#101010] p-5 md:p-6">
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div className="space-y-4">
+          <section className="rounded-xl border border-[#1b1b1b] bg-[#101010] p-4">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div>
-                <p className="text-xs uppercase tracking-[0.24em] text-[#F59E0B]">Public sharing</p>
-                <h2 className="mt-2 text-xl font-semibold text-zinc-50">Share this prompt read-only</h2>
-                <p className="mt-1 text-sm text-zinc-400">
-                  Toggle public access to publish a read-only prompt page and surface it in `/explore`.
-                </p>
+                <p className="text-[11px] uppercase tracking-[0.18em] text-zinc-500">Sharing</p>
+                <h2 className="mt-1 text-sm font-semibold text-zinc-50">Public read-only link</h2>
+                <p className="mt-1 text-sm text-zinc-500">Only enable this when you want others to inspect the prompt and copy versions.</p>
               </div>
               <button
                 type="button"
                 onClick={handleTogglePublic}
                 disabled={sharing}
-                className={`relative h-8 w-14 rounded-full transition-colors ${isPublic ? 'bg-[#F59E0B]' : 'bg-[#27272a]'}`}
+                className={`relative h-7 w-12 rounded-full transition-colors ${isPublic ? 'bg-[#F59E0B]' : 'bg-[#27272a]'}`}
               >
                 <span
-                  className={`absolute top-1 h-6 w-6 rounded-full bg-white transition-transform ${isPublic ? 'translate-x-7' : 'translate-x-1'}`}
+                  className={`absolute top-1 h-5 w-5 rounded-full bg-white transition-transform ${isPublic ? 'translate-x-6' : 'translate-x-1'}`}
                 />
               </button>
             </div>
-            <div className="mt-5 rounded-2xl border border-[#1f1f1f] bg-[#0b0b0b] p-4">
-              <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                <div>
-                  <p className="text-sm font-medium text-zinc-100">{isPublic ? 'Public link is active' : 'Prompt is private'}</p>
-                  <p className="mt-1 text-sm text-zinc-500">{isPublic ? publicUrl : 'Turn on public sharing to create a read-only share URL.'}</p>
-                </div>
-                {isPublic && <CopyButton value={publicUrl} label="Copy share URL" copiedLabel="URL copied" />}
+            <div className="mt-3 flex flex-col gap-2 rounded-lg border border-[#1f1f1f] bg-[#0b0b0b] p-3 md:flex-row md:items-center md:justify-between">
+              <div>
+                <p className="text-sm text-zinc-100">{isPublic ? 'Public link enabled' : 'Private only'}</p>
+                <p className="mt-1 text-sm text-zinc-500">{isPublic ? publicUrl : 'Turn on public sharing to generate a read-only URL.'}</p>
               </div>
+                      {isPublic && <CopyButton value={publicUrl} label="Copy share URL" copiedLabel="Copied" />}
             </div>
           </section>
 
-          <section className="rounded-3xl border border-[#1f1f1f] bg-[#101010] p-5 md:p-6">
-            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <section className="rounded-xl border border-[#1b1b1b] bg-[#101010] p-4">
+            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
               <div>
-                <p className="text-xs uppercase tracking-[0.24em] text-[#F59E0B]">Selected version</p>
+                <p className="text-[11px] uppercase tracking-[0.18em] text-zinc-500">Selected version</p>
                 {selectedVersion ? (
                   <>
-                    <h2 className="mt-2 text-xl font-semibold text-zinc-50">Version {selectedVersion.version}</h2>
-                    <p className="mt-1 text-sm text-zinc-400">{selectedVersion.message || 'No commit message'}</p>
+                    <p className="mt-1 font-mono text-[12px] text-zinc-400">{versionLabel(selectedVersion)}</p>
+                    <p className="mt-1 text-sm text-zinc-100">{selectedVersion.message ?? 'No commit message'}</p>
                   </>
                 ) : (
-                  <h2 className="mt-2 text-xl font-semibold text-zinc-50">No version selected</h2>
+                  <p className="mt-1 text-sm text-zinc-500">No versions yet. Save your first version above.</p>
                 )}
               </div>
-              <div className="flex flex-wrap items-center gap-3">
-                {selectedVersion?.model && (
-                  <span className="rounded-full border border-[#F59E0B]/20 bg-[#F59E0B]/10 px-3 py-1 text-xs text-[#f8c86f]">
-                    {selectedVersion.model}
-                  </span>
-                )}
+              <div className="flex items-center gap-2">
+                {selectedVersion?.model && <span className="rounded-full border border-[#222222] px-2 py-0.5 text-[11px] text-zinc-400">{selectedVersion.model}</span>}
                 {selectedVersion && <CopyButton value={selectedVersion.content} label="Copy content" copiedLabel="Copied" />}
               </div>
             </div>
-            <div className="mt-5 rounded-3xl border border-[#1f1f1f] bg-[#0b0b0b] p-4 md:p-5">
-              <pre className="whitespace-pre-wrap break-words font-mono text-sm leading-7 text-zinc-200">
-                {selectedVersion?.content ?? 'Select a version from the timeline.'}
+            <div className="mt-3 rounded-lg border border-[#1f1f1f] bg-[#0b0b0b] p-3">
+              <pre className="whitespace-pre-wrap break-words font-mono text-[13px] leading-6 text-zinc-200">
+                {selectedVersion?.content ?? 'No versions yet. Save your first version above.'}
               </pre>
             </div>
           </section>
 
-          <section className="rounded-3xl border border-[#1f1f1f] bg-[#101010] p-5 md:p-6">
+          <section className="rounded-xl border border-[#1b1b1b] bg-[#101010] p-4">
             <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
               <div>
-                <p className="text-xs uppercase tracking-[0.24em] text-[#F59E0B]">Create version</p>
-                <h2 className="mt-2 text-xl font-semibold text-zinc-50">Save the next iteration</h2>
-                <p className="mt-1 text-sm text-zinc-400">
-                  Draft a new version, tag the model, and leave a commit note for future diffs.
-                </p>
+                <p className="text-[11px] uppercase tracking-[0.18em] text-zinc-500">Create version</p>
+                <h2 className="mt-1 text-sm font-semibold text-zinc-50">Save the next revision</h2>
               </div>
-              <div className="rounded-full border border-[#2a2a2a] bg-[#0b0b0b] px-3 py-1 text-xs text-zinc-400">
-                Next version: v{(prompt.versions[0]?.version ?? 0) + 1}
+              <div className="flex items-center gap-2 text-[11px] text-zinc-600">
+                <span>⌘S</span>
+                <span>save</span>
               </div>
             </div>
 
-            <div className="mt-5 space-y-4">
-              <Textarea
-                value={draftContent}
-                onChange={(event) => setDraftContent(event.target.value)}
-                rows={14}
-                className="font-mono leading-6"
-                placeholder="Refine your prompt here..."
-              />
-              <div className="grid gap-4 md:grid-cols-2">
-                <div>
-                  <label className="mb-2 block text-xs font-medium uppercase tracking-[0.2em] text-zinc-500">
-                    Commit message
-                  </label>
-                  <Input
-                    value={commitMessage}
-                    onChange={(event) => setCommitMessage(event.target.value)}
-                    placeholder="Improve fallback instructions"
-                  />
-                </div>
-                <div>
-                  <label className="mb-2 block text-xs font-medium uppercase tracking-[0.2em] text-zinc-500">
-                    Model tag
-                  </label>
-                  <Input
-                    value={modelTag}
-                    onChange={(event) => setModelTag(event.target.value)}
-                    placeholder="claude-3.7-sonnet"
-                  />
+            <div className="mt-3 space-y-3">
+              <div className="relative">
+                <Textarea
+                  value={draftContent}
+                  onChange={(event) => setDraftContent(event.target.value)}
+                  rows={14}
+                  className="min-h-[280px] rounded-lg border-[#222222] bg-[#0b0b0b] pb-10 font-mono text-[13px] leading-6"
+                  placeholder="Write the next revision here..."
+                />
+                <div className="pointer-events-none absolute bottom-3 right-3 text-[11px] text-zinc-600">
+                  {charCount} chars · ~{tokenCount} tokens
                 </div>
               </div>
-              {error && <p className="rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-300">{error}</p>}
-              <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-                <Button variant="outline" onClick={loadSelectedIntoDraft}>
-                  Load selected version
+              <div className="grid gap-3 md:grid-cols-2">
+                <div>
+                  <label className="mb-1.5 block text-[11px] uppercase tracking-[0.18em] text-zinc-500">Commit message</label>
+                  <Input value={commitMessage} onChange={(event) => setCommitMessage(event.target.value)} placeholder="Refined fallback tone" />
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-[11px] uppercase tracking-[0.18em] text-zinc-500">Model tag</label>
+                  <Input value={modelTag} onChange={(event) => setModelTag(event.target.value)} placeholder="claude-3.7-sonnet" />
+                </div>
+              </div>
+              {error && <p className="rounded-lg border border-red-500/20 bg-red-500/10 px-3 py-2 text-sm text-red-300">{error}</p>}
+              <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                <Button variant="outline" onClick={loadSelectedIntoDraft} className="h-9 rounded-lg px-3">
+                  Load selected
+                  <span className="ml-2 text-[11px] text-zinc-500">base</span>
                 </Button>
-                <Button onClick={handleCreateVersion} disabled={saving}>
-                  {saving ? 'Saving version...' : 'Save version'}
+                <Button onClick={handleCreateVersion} disabled={saving} className="h-9 rounded-lg px-3">
+                  {saving ? 'Saving...' : 'Save version'}
+                  <span className="ml-2 text-[11px] text-[#7c5a12]">⌘S</span>
                 </Button>
               </div>
             </div>
           </section>
 
-          <section className="rounded-3xl border border-[#1f1f1f] bg-[#101010] p-5 md:p-6">
+          <section className="rounded-xl border border-[#1b1b1b] bg-[#101010] p-4">
             <div>
-              <p className="text-xs uppercase tracking-[0.24em] text-[#F59E0B]">Diff viewer</p>
-              <h2 className="mt-2 text-xl font-semibold text-zinc-50">Compare prompt revisions</h2>
-              <p className="mt-1 text-sm text-zinc-400">Select any two versions for a unified diff with added lines in green and removed lines in red.</p>
+              <p className="text-[11px] uppercase tracking-[0.18em] text-zinc-500">Diff</p>
+              <h2 className="mt-1 text-sm font-semibold text-zinc-50">Compare any two versions</h2>
             </div>
 
-            <div className="mt-5 grid gap-4 lg:grid-cols-[1fr_auto_1fr] lg:items-end">
+            <div className="mt-3 grid gap-3 lg:grid-cols-[1fr_auto_1fr] lg:items-end">
               <div>
-                <label className="mb-2 block text-xs font-medium uppercase tracking-[0.2em] text-zinc-500">Base version</label>
+                <label className="mb-1.5 block text-[11px] uppercase tracking-[0.18em] text-zinc-500">Base</label>
                 <select
                   value={selectedVersion?.id ?? ''}
                   onChange={(event) => setSelectedVersionId(event.target.value)}
-                  className="h-11 w-full rounded-xl border border-[#2a2a2a] bg-[#111111] px-3 text-sm text-zinc-100 focus:border-[#F59E0B]/60 focus:outline-none"
+                  className="h-10 w-full rounded-lg border border-[#222222] bg-[#0b0b0b] px-3 text-sm text-zinc-100 focus:border-[#F59E0B]/70 focus:outline-none"
                 >
                   {prompt.versions.map((version) => (
                     <option key={version.id} value={version.id}>
-                      v{version.version} - {version.message || 'No commit message'}
+                      {versionLabel(version)}
                     </option>
                   ))}
                 </select>
               </div>
-              <div className="pb-3 text-center text-zinc-600">vs</div>
+              <div className="pb-2 text-center text-zinc-600">vs</div>
               <div>
-                <label className="mb-2 block text-xs font-medium uppercase tracking-[0.2em] text-zinc-500">Compare with</label>
+                <label className="mb-1.5 block text-[11px] uppercase tracking-[0.18em] text-zinc-500">Compare</label>
                 <select
                   value={compareVersion?.id ?? ''}
                   onChange={(event) => setCompareVersionId(event.target.value)}
-                  className="h-11 w-full rounded-xl border border-[#2a2a2a] bg-[#111111] px-3 text-sm text-zinc-100 focus:border-[#F59E0B]/60 focus:outline-none"
+                  className="h-10 w-full rounded-lg border border-[#222222] bg-[#0b0b0b] px-3 text-sm text-zinc-100 focus:border-[#F59E0B]/70 focus:outline-none"
                 >
                   {prompt.versions.map((version) => (
                     <option key={version.id} value={version.id}>
-                      v{version.version} - {version.message || 'No commit message'}
+                      {versionLabel(version)}
                     </option>
                   ))}
                 </select>
               </div>
             </div>
 
-            <div className="mt-5">
+            <div className="mt-3">
               {selectedVersion && compareVersion ? (
                 <DiffViewer oldText={selectedVersion.content} newText={compareVersion.content} />
               ) : (
-                <div className="rounded-3xl border border-dashed border-[#2a2a2a] bg-[#0f0f0f] px-6 py-12 text-center text-sm text-zinc-500">
-                  Pick two versions to compare their prompt content.
+                <div className="rounded-lg border border-dashed border-[#222222] bg-[#0d0d0d] px-4 py-8 text-center text-sm text-zinc-500">
+                  No versions yet. Save your first version above.
                 </div>
               )}
             </div>

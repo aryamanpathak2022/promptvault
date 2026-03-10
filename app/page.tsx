@@ -193,16 +193,16 @@ export default async function LandingPage() {
         </h1>
 
         <p className="text-lg md:text-xl max-w-2xl mx-auto mb-10 animate-fade-up-2 leading-relaxed" style={{ color: '#888' }}>
-          Git-like versioning for LLM prompts. CLI + MCP server. Works natively in Claude Code and Cursor.
+          Git for your prompts. Version, share, and iterate without losing what worked.
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16 animate-fade-up-3">
           <Link href="/login" className="px-6 py-3 rounded-xl amber-btn w-full sm:w-auto text-center">
             Install CLI →
           </Link>
-          <a href="https://github.com/aryamanpathak2022/promptvault" target="_blank" rel="noopener" className="px-6 py-3 rounded-xl outline-btn w-full sm:w-auto text-center text-sm" style={{ background: 'transparent' }}>
-            View GitHub →
-          </a>
+          <Link href="/explore" className="px-6 py-3 rounded-xl outline-btn w-full sm:w-auto text-center text-sm" style={{ background: 'transparent' }}>
+            Browse public prompts →
+          </Link>
         </div>
 
         {/* Terminal demo */}
