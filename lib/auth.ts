@@ -25,6 +25,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       name: 'authjs.callback-url',
       options: { sameSite: 'none', path: '/', secure: true },
     },
+    pkceCodeVerifier: {
+      name: 'authjs.pkce-code-verifier',
+      options: { httpOnly: true, sameSite: 'none', path: '/', secure: true },
+    },
     sessionToken: {
       name: 'authjs.session-token',
       options: { httpOnly: true, sameSite: 'none', path: '/', secure: true },
