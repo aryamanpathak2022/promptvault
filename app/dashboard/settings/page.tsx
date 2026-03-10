@@ -11,7 +11,7 @@ export default async function SettingsPage() {
     orderBy: { createdAt: 'desc' },
   })
 
-  const serialized = keys.map(k => ({
+  const serialized = keys.map((k: any) => ({
     id: k.id,
     name: k.name,
     key: k.key.slice(0, 8) + '...' + k.key.slice(-4),

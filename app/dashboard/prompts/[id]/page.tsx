@@ -20,7 +20,7 @@ export default async function PromptDetailPage({ params }: { params: Promise<{ i
     tags: JSON.parse(prompt.tags || '[]') as string[],
     createdAt: prompt.createdAt.toISOString(),
     updatedAt: prompt.updatedAt.toISOString(),
-    versions: prompt.versions.map(v => ({
+    versions: prompt.versions.map((v: any) => ({
       ...v,
       createdAt: v.createdAt.toISOString(),
     })),

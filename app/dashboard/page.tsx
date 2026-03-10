@@ -18,12 +18,12 @@ export default async function DashboardPage() {
     orderBy: { updatedAt: 'desc' },
   })
 
-  const serialized = prompts.map(p => ({
+  const serialized = prompts.map((p: any) => ({
     ...p,
     tags: JSON.parse(p.tags || '[]') as string[],
     createdAt: p.createdAt.toISOString(),
     updatedAt: p.updatedAt.toISOString(),
-    versions: p.versions.map(v => ({
+    versions: p.versions.map((v: any) => ({
       ...v,
       createdAt: v.createdAt.toISOString(),
     })),
