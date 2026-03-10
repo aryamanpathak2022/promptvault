@@ -14,7 +14,7 @@ export async function GET() {
   })
 
   // Mask keys
-  const masked = keys.map(k => ({
+  const masked = keys.map((k: typeof keys[number]) => ({
     ...k,
     key: k.key.slice(0, 8) + '...' + k.key.slice(-4),
   }))
