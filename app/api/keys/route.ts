@@ -1,7 +1,11 @@
-import { randomBytes } from 'crypto'
+import { randomBytes, createHash } from 'crypto'
 import { NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/current-user'
 import { prisma } from '@/lib/prisma'
+
+function hashKey(key: string): string {
+  return createHash('sha256').update(key).digest('hex')
+}
 
 export async function GET() {
   const user = await getCurrentUser()
@@ -10,13 +14,16 @@ export async function GET() {
   const keys = await prisma.apiKey.findMany({
     where: { userId: user.id },
     orderBy: { createdAt: 'desc' },
-    select: { id: true, name: true, createdAt: true, lastUsed: true, key: true },
+    select: { id: true, name: true, createdAt: true, lastUsed: true, keyPrefix: true },
   })
 
   return NextResponse.json(
     keys.map((key) => ({
-      ...key,
-      key: `${key.key.slice(0, 8)}...${key.key.slice(-4)}`,
+      id: key.id,
+      name: key.name,
+      key: key.keyPrefix ? `${key.keyPrefix}...` : '••••••••',
+      createdAt: key.createdAt.toISOString(),
+      lastUsed: key.lastUsed?.toISOString() ?? null,
     }))
   )
 }
@@ -32,21 +39,25 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Name is required.' }, { status: 400 })
   }
 
-  const key = `pv_${randomBytes(32).toString('hex')}`
+  const rawKey = `pv_${randomBytes(32).toString('hex')}`
+  const hashedKey = hashKey(rawKey)
+  const keyPrefix = rawKey.slice(0, 8)
+
   const apiKey = await prisma.apiKey.create({
     data: {
       userId: user.id,
       name,
-      key,
+      key: hashedKey,
+      keyPrefix,
     },
   })
 
+  // Return the raw key only on creation — it cannot be retrieved again
   return NextResponse.json(
     {
       id: apiKey.id,
       name: apiKey.name,
-      key,
-      maskedKey: `${key.slice(0, 8)}...${key.slice(-4)}`,
+      key: rawKey,
       createdAt: apiKey.createdAt.toISOString(),
       lastUsed: apiKey.lastUsed?.toISOString() ?? null,
     },

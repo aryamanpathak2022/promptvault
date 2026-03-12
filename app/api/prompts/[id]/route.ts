@@ -57,23 +57,24 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
   const tags = Array.isArray(body.tags) ? body.tags.filter((tag: unknown) => typeof tag === 'string') : undefined
   const isPublic = typeof body.isPublic === 'boolean' ? body.isPublic : undefined
 
-  const updated = await prisma.prompt.updateMany({
+  // Verify ownership first
+  const existing = await prisma.prompt.findFirst({
     where: { id, userId: ctx.userId },
+  })
+
+  if (!existing) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+
+  const prompt = await prisma.prompt.update({
+    where: { id },
     data: {
       ...(name ? { name } : {}),
       ...(tags !== undefined ? { tags: JSON.stringify(tags) } : {}),
       ...(isPublic !== undefined ? { isPublic } : {}),
     },
-  })
-
-  if (updated.count === 0) return NextResponse.json({ error: 'Not found' }, { status: 404 })
-
-  const prompt = await prisma.prompt.findFirst({
-    where: { id, userId: ctx.userId },
     include: { versions: { orderBy: { version: 'desc' } } },
   })
 
-  return NextResponse.json(prompt ? serializePrompt(prompt) : { success: true })
+  return NextResponse.json(serializePrompt(prompt))
 }
 
 export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
