@@ -7,15 +7,17 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  email         String?   @unique
-  name          String?
-  image         String?
-  accounts      Account[]
-  sessions      Session[]
-  prompts       Prompt[]
-  apiKeys       ApiKey[]
-  createdAt     DateTime  @default(now())
+  id           String        @id @default(cuid())
+  email        String?       @unique
+  name         String?
+  image        String?
+  accounts     Account[]
+  sessions     Session[]
+  prompts      Prompt[]
+  apiKeys      ApiKey[]
+  promptBlocks PromptBlock[]
+  canvases     Canvas[]
+  createdAt    DateTime      @default(now())
 }
 
 model Account {
@@ -92,4 +94,59 @@ model ApiKey {
   lastUsed  DateTime?
 
   @@index([userId])
+}
+
+// Prompt Canvas - Playground for building prompts with blocks
+model Canvas {
+  id          String            @id @default(cuid())
+  name        String
+  description String?
+  userId      String
+  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  blocks      PromptBlock[]
+  connections BlockConnection[]
+  isPublic    Boolean           @default(false)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  @@index([userId])
+  @@index([isPublic])
+}
+
+// Individual prompt blocks in the canvas
+model PromptBlock {
+  id        String   @id @default(cuid())
+  canvasId  String
+  canvas    Canvas   @relation(fields: [canvasId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  content   String
+  type      String   @default("prompt") // prompt, system, context, reference
+  positionX Float    @default(0)
+  positionY Float    @default(0)
+  color     String   @default("#F59E0B")
+  width     Float    @default(280)
+  height    Float    @default(160)
+  inputs    String   @default("[]") // JSON array of input connection points
+  outputs   String   @default("[]") // JSON array of output connection points
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([canvasId])
+  @@index([userId])
+}
+
+// Connections between blocks
+model BlockConnection {
+  id            String  @id @default(cuid())
+  canvasId      String
+  canvas        Canvas  @relation(fields: [canvasId], references: [id], onDelete: Cascade)
+  sourceBlockId String
+  targetBlockId String
+  sourceHandle  String  @default("output")
+  targetHandle  String  @default("input")
+  label         String?
+
+  @@index([canvasId])
 }

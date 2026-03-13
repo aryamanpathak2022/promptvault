@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { auth } from '@/lib/auth'
+import { auth } from '@/lib/auth-middleware'
 
 export default auth((req) => {
   const isAuthenticated = Boolean(req.auth?.user)

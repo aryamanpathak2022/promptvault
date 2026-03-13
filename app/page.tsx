@@ -30,6 +30,59 @@ export default async function LandingPage() {
         .animate-fade-up-1 { animation: fadeUp 0.6s 0.1s ease both; }
         .animate-fade-up-2 { animation: fadeUp 0.6s 0.2s ease both; }
         .animate-fade-up-3 { animation: fadeUp 0.6s 0.3s ease both; }
+        
+        /* Main elevated surface - cards and panels */
+        .elevated-surface {
+          background: linear-gradient(145deg, #161616 0%, #0f0f0f 100%) !important;
+          box-shadow: 
+            0 1px 0 rgba(255,255,255,0.04) inset,
+            0 2px 4px rgba(0,0,0,0.3) inset,
+            0 10px 40px rgba(0,0,0,0.5),
+            0 0 0 1px rgba(255,255,255,0.03);
+        }
+        
+        /* Primary elevated - current/new/active items */
+        .elevated-primary {
+          background: linear-gradient(145deg, rgba(245,158,11,0.12) 0%, rgba(245,158,11,0.06) 100%) !important;
+          box-shadow: 
+            0 1px 0 rgba(245,158,11,0.15) inset,
+            0 4px 12px rgba(245,158,11,0.15) inset,
+            0 8px 24px rgba(0,0,0,0.4),
+            0 12px 48px rgba(245,158,11,0.1),
+            0 0 0 1px rgba(245,158,11,0.25);
+        }
+        
+        /* Secondary elevated - success/green */
+        .elevated-success {
+          background: linear-gradient(145deg, rgba(74,222,128,0.1) 0%, rgba(74,222,128,0.04) 100%) !important;
+          box-shadow: 
+            0 1px 0 rgba(74,222,128,0.12) inset,
+            0 4px 12px rgba(74,222,128,0.1) inset,
+            0 8px 24px rgba(0,0,0,0.4),
+            0 12px 48px rgba(74,222,128,0.08),
+            0 0 0 1px rgba(74,222,128,0.2);
+        }
+        
+        /* Tertiary elevated - purple/search */
+        .elevated-accent {
+          background: linear-gradient(145deg, rgba(168,85,247,0.1) 0%, rgba(168,85,247,0.04) 100%) !important;
+          box-shadow: 
+            0 1px 0 rgba(168,85,247,0.12) inset,
+            0 4px 12px rgba(168,85,247,0.1) inset,
+            0 8px 24px rgba(0,0,0,0.4),
+            0 12px 48px rgba(168,85,247,0.08),
+            0 0 0 1px rgba(168,85,247,0.2);
+        }
+        
+        /* Subtle raised - inputs, buttons */
+        .elevated-raised {
+          background: linear-gradient(180deg, #1a1a1a 0%, #141414 100%) !important;
+          box-shadow: 
+            0 1px 2px rgba(0,0,0,0.5),
+            0 4px 8px rgba(0,0,0,0.3),
+            0 0 0 1px rgba(255,255,255,0.05);
+        }
+        
         .amber-btn {
           background: #F59E0B;
           color: #080808;
@@ -86,6 +139,19 @@ export default async function LandingPage() {
         .terminal-line:nth-child(8) { animation-delay: 2.4s }
         .terminal-line:nth-child(9) { animation-delay: 2.7s }
         .terminal-line:nth-child(10) { animation-delay: 2.9s }
+        .diff-line { opacity: 0; animation: fadeUp 0.4s ease forwards; }
+        .diff-line:nth-child(1) { animation-delay: 0.3s }
+        .diff-line:nth-child(2) { animation-delay: 0.5s }
+        .diff-line:nth-child(3) { animation-delay: 0.7s }
+        .diff-line:nth-child(4) { animation-delay: 0.9s }
+        .diff-line:nth-child(5) { animation-delay: 1.1s }
+        .diff-line:nth-child(6) { animation-delay: 1.3s }
+        .diff-line:nth-child(7) { animation-delay: 1.5s }
+        .diff-line:nth-child(8) { animation-delay: 1.7s }
+        .diff-line:nth-child(9) { animation-delay: 1.9s }
+        .diff-line:nth-child(10) { animation-delay: 2.1s }
+        .diff-line:nth-child(11) { animation-delay: 2.3s }
+        .diff-line:nth-child(12) { animation-delay: 2.5s }
       `}</style>
 
       {/* Nav */}
@@ -206,7 +272,7 @@ export default async function LandingPage() {
         </div>
 
         {/* Terminal demo */}
-        <div className="max-w-3xl mx-auto rounded-2xl overflow-hidden text-left shadow-2xl" style={{ border: '1px solid #222', background: '#0f0f0f' }}>
+        <div className="max-w-3xl mx-auto rounded-2xl overflow-hidden text-left elevated-surface" style={{ border: '1px solid #333', background: undefined }}>
           <div className="flex items-center gap-2 px-4 py-3 border-b" style={{ borderColor: '#222', background: '#141414' }}>
             <div className="w-3 h-3 rounded-full" style={{ background: '#FF5F57' }} />
             <div className="w-3 h-3 rounded-full" style={{ background: '#FFBD2E' }} />
@@ -299,30 +365,295 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      {/* Features — Bento Grid */}
+      {/* Features — Professional Sections with Demos */}
       <section id="features" className="relative z-10 py-20 px-6 max-w-7xl mx-auto">
-        <div className="text-center mb-16">
+        <div className="text-center mb-20">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Everything you need</h2>
           <p className="max-w-xl mx-auto" style={{ color: '#888' }}>Built for developers who take prompts seriously.</p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[
-            { icon: '🔄', title: 'Version History', desc: 'Every change tracked. Roll back anytime.' },
-            { icon: '⚡', title: 'CLI Tool', desc: 'pvault save, get, diff, history. Fast.' },
-            { icon: '🔌', title: 'MCP Native', desc: 'Works directly in Claude Code and Cursor.' },
-            { icon: '🔍', title: 'Diff Viewer', desc: 'See exactly what changed between versions.' },
-            { icon: '🏷️', title: 'Tags & Search', desc: 'Organize prompts. Find them instantly.' },
-            { icon: '🔑', title: 'API Keys', desc: 'Sync from CLI to web and back.' },
-          ].map((f) => (
-            <div key={f.title} className="glow-card p-6" style={{ background: '#141414' }}>
-              <div className="w-10 h-10 rounded-lg flex items-center justify-center text-lg mb-4" style={{ background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.2)' }}>
-                {f.icon}
-              </div>
-              <h3 className="font-semibold text-white mb-2">{f.title}</h3>
-              <p className="text-sm leading-relaxed" style={{ color: '#888' }}>{f.desc}</p>
+        {/* Feature 1: Version History */}
+        <div className="mb-24">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <h3 className="text-2xl md:text-3xl font-bold text-white mb-4">Every change tracked. Roll back anytime.</h3>
+              <p className="text-lg leading-relaxed mb-6" style={{ color: '#888' }}>
+                Never lose a working prompt version again. Each save creates a new version with a timestamp and optional message. Browse history, compare versions, and restore any previous state with a single command.
+              </p>
+              <ul className="space-y-3">
+                {['Full version history with timestamps', 'Restore any version instantly', 'Compare any two versions with diff'].map(item => (
+                  <li key={item} className="flex items-center gap-3" style={{ color: '#888' }}>
+                    <div className="w-5 h-5 rounded-full flex items-center justify-center" style={{ background: 'rgba(74,222,128,0.15)' }}>
+                      <span style={{ color: '#4ADE80', fontSize: '12px' }}>✓</span>
+                    </div>
+                    {item}
+                  </li>
+                ))}
+              </ul>
             </div>
-          ))}
+            <div>
+              <div className="rounded-xl overflow-hidden elevated-surface" style={{ border: '1px solid #333', background: undefined }}>
+                <div className="flex items-center gap-2 px-4 py-3 border-b" style={{ borderColor: '#222', background: '#141414' }}>
+                  <span className="text-xs font-mono" style={{ color: '#555' }}>Version History — code-reviewer</span>
+                </div>
+                <div className="p-4 space-y-3">
+                  {[
+                    { v: 'v7', date: 'Today, 2:30 PM', msg: 'Added SQL injection checks', current: true },
+                    { v: 'v6', date: 'Today, 11:15 AM', msg: 'Improved error handling', current: false },
+                    { v: 'v5', date: 'Yesterday', msg: 'Added authentication checks', current: false },
+                    { v: 'v4', date: 'Feb 28', msg: 'Refactored for clarity', current: false },
+                    { v: 'v3', date: 'Feb 25', msg: 'Added security focus', current: false },
+                    { v: 'v2', date: 'Feb 20', msg: 'Initial version', current: false },
+                  ].map((version, i) => (
+                    <div key={version.v} className={`flex items-center gap-4 p-3 rounded-lg cursor-pointer transition-all ${version.current ? 'elevated-primary' : ''}`} style={{ 
+                      background: version.current ? undefined : 'transparent',
+                      border: version.current ? 'none' : '1px solid transparent'
+                    }}>
+                      <div className="w-10 h-10 rounded-lg flex items-center justify-center text-sm font-mono font-bold" style={{ 
+                        background: version.current ? '#F59E0B' : '#1a1a1a',
+                        color: version.current ? '#080808' : '#666'
+                      }}>
+                        {version.v}
+                      </div>
+                      <div className="flex-1">
+                        <div className="text-sm font-medium" style={{ color: version.current ? '#F59E0B' : '#FAFAFA' }}>{version.msg}</div>
+                        <div className="text-xs" style={{ color: '#555' }}>{version.date}</div>
+                      </div>
+                      {version.current && (
+                        <span className="text-xs px-2 py-1 rounded" style={{ background: 'rgba(245,158,11,0.2)', color: '#F59E0B' }}>Current</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Feature 2: Diff Viewer */}
+        <div className="mb-24">
+          <div className="grid lg:grid-cols-2 gap-12 items-center lg:flex-row-reverse">
+            <div className="lg:order-2">
+              <h3 className="text-2xl md:text-3xl font-bold text-white mb-4">See exactly what changed between versions.</h3>
+              <p className="text-lg leading-relaxed mb-6" style={{ color: '#888' }}>
+                Compare any two versions side-by-side with clear visual diffs. Red highlights show what was removed, green shows what was added. Understand your prompt evolution at a glance.
+              </p>
+              <ul className="space-y-3">
+                {['Side-by-side version comparison', 'Color-coded additions and deletions', 'Percentage similarity indicator'].map(item => (
+                  <li key={item} className="flex items-center gap-3" style={{ color: '#888' }}>
+                    <div className="w-5 h-5 rounded-full flex items-center justify-center" style={{ background: 'rgba(74,222,128,0.15)' }}>
+                      <span style={{ color: '#4ADE80', fontSize: '12px' }}>✓</span>
+                    </div>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="lg:order-1">
+              <div className="rounded-xl overflow-hidden elevated-surface" style={{ border: '1px solid #333', background: undefined }}>
+                <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: '#222', background: '#141414' }}>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2.5 h-2.5 rounded-full" style={{ background: '#FF5F57' }} />
+                    <div className="w-2.5 h-2.5 rounded-full" style={{ background: '#FFBD2E' }} />
+                    <div className="w-2.5 h-2.5 rounded-full" style={{ background: '#28C840' }} />
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs font-mono px-2 py-1 rounded" style={{ background: '#1a1a1a', color: '#666' }}>v2</span>
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ color: '#555' }}>
+                      <path d="M4 8h8M9 5l3 3-3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                    <span className="text-xs font-mono px-2 py-1 rounded" style={{ background: '#F59E0B', color: '#080808' }}>v3</span>
+                  </div>
+                </div>
+                <div className="p-0 font-mono text-sm">
+                  {/* Version header */}
+                  <div className="flex items-center gap-4 px-4 py-2 border-b text-xs" style={{ borderColor: '#222', background: '#141414', color: '#555' }}>
+                    <span className="w-8">Ver</span>
+                    <span>Prompt Content</span>
+                  </div>
+                  {/* Old version - v2 */}
+                  <div className="flex" style={{ background: 'rgba(248,113,113,0.04)' }}>
+                    <div className="w-16 px-3 py-2 text-xs flex-shrink-0 border-r flex items-center gap-2" style={{ borderColor: '#222', color: '#666' }}>
+                      <span className="px-1.5 py-0.5 rounded text-xs" style={{ background: '#1a1a1a', color: '#666' }}>v2</span>
+                    </div>
+                    <div className="flex-1 p-2 overflow-x-auto">
+                      <div className="whitespace-pre" style={{ color: '#888' }}>You are a code reviewer. Review the following code for bugs only.</div>
+                    </div>
+                  </div>
+                  {/* Diff highlights */}
+                  <div className="flex" style={{ background: 'rgba(248,113,113,0.08)' }}>
+                    <div className="w-16 px-3 py-1.5 text-xs flex-shrink-0 border-r flex items-center justify-center" style={{ borderColor: '#222' }}>
+                      <span className="text-xs font-bold" style={{ color: '#F87171' }}>−1</span>
+                    </div>
+                    <div className="flex-1 px-3 py-1.5 overflow-x-auto">
+                      <span style={{ color: '#F87171', textDecoration: 'line-through', opacity: 0.7 }}>Review the following code for bugs only</span>
+                    </div>
+                  </div>
+                  <div className="flex" style={{ background: 'rgba(74,222,128,0.08)' }}>
+                    <div className="w-16 px-3 py-1.5 text-xs flex-shrink-0 border-r flex items-center justify-center" style={{ borderColor: '#222' }}>
+                      <span className="text-xs font-bold" style={{ color: '#4ADE80' }}>+1</span>
+                    </div>
+                    <div className="flex-1 px-3 py-1.5 overflow-x-auto">
+                      <span style={{ color: '#4ADE80' }}>+ Review for bugs AND security vulnerabilities</span>
+                    </div>
+                  </div>
+                  <div className="flex" style={{ background: 'rgba(74,222,128,0.08)' }}>
+                    <div className="w-16 px-3 py-1.5 text-xs flex-shrink-0 border-r flex items-center justify-center" style={{ borderColor: '#222' }}>
+                      <span className="text-xs font-bold" style={{ color: '#4ADE80' }}>+2</span>
+                    </div>
+                    <div className="flex-1 px-3 py-1.5 overflow-x-auto">
+                      <span style={{ color: '#4ADE80' }}>+ Pay attention to injection attacks and auth bypasses</span>
+                    </div>
+                  </div>
+                  {/* New version - v3 */}
+                  <div className="flex elevated-success" style={{ background: undefined }}>
+                    <div className="w-16 px-3 py-2 text-xs flex-shrink-0 border-r flex items-center gap-2" style={{ borderColor: '#222', color: '#666' }}>
+                      <span className="px-1.5 py-0.5 rounded text-xs font-bold" style={{ background: '#F59E0B', color: '#080808' }}>v3</span>
+                    </div>
+                    <div className="flex-1 p-2 overflow-x-auto">
+                      <div className="whitespace-pre font-medium" style={{ color: '#FAFAFA' }}>You are a code reviewer.</div>
+                    </div>
+                  </div>
+                  {/* Stats footer */}
+                  <div className="flex items-center gap-4 px-4 py-2 border-t text-xs" style={{ borderColor: '#222', background: '#141414', color: '#555' }}>
+                    <span><span style={{ color: '#F87171' }}>−1</span> line removed</span>
+                    <span><span style={{ color: '#4ADE80' }}>+2</span> lines added</span>
+                    <span style={{ color: '#888' }}>98% similar</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Feature 3: Tags & Search */}
+        <div className="mb-24">
+          <div className="grid lg:grid-cols-2 gap-12 items-center lg:flex-row-reverse">
+            <div className="lg:order-2">
+              <h3 className="text-2xl md:text-3xl font-bold text-white mb-4">Organize prompts. Find them instantly.</h3>
+              <p className="text-lg leading-relaxed mb-6" style={{ color: '#888' }}>
+                Tag your prompts with meaningful labels like "production", "testing", or "deprecated". Search across all your prompts with instant filtering by name, content, or tags.
+              </p>
+              <ul className="space-y-3">
+                {['Filter by multiple tags at once', 'Full-text search across all prompts', 'Keyboard shortcuts for power users'].map(item => (
+                  <li key={item} className="flex items-center gap-3" style={{ color: '#888' }}>
+                    <div className="w-5 h-5 rounded-full flex items-center justify-center" style={{ background: 'rgba(74,222,128,0.15)' }}>
+                      <span style={{ color: '#4ADE80', fontSize: '12px' }}>✓</span>
+                    </div>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="lg:order-1">
+              <div className="rounded-xl overflow-hidden elevated-surface" style={{ border: '1px solid #333', background: undefined }}>
+                <div className="p-4 border-b" style={{ borderColor: '#222' }}>
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1 flex items-center gap-2 px-4 py-2.5 rounded-lg elevated-raised" style={{ background: '#141414', border: '1px solid #333' }}>
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ color: '#555' }}>
+                        <circle cx="7" cy="7" r="4.5" stroke="currentColor" strokeWidth="1.5"/>
+                        <path d="M10.5 10.5L14 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                      </svg>
+                      <span className="text-sm" style={{ color: '#555' }}>Search prompts...</span>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-2 mt-3">
+                    {['production', 'testing', 'security', 'refactor'].map(tag => (
+                      <span key={tag} className={`px-3 py-1 rounded-full text-xs cursor-pointer transition-all ${tag === 'production' ? 'elevated-primary' : ''}`} style={{ 
+                        background: tag === 'production' ? undefined : '#1a1a1a',
+                        color: tag === 'production' ? '#F59E0B' : '#666',
+                        border: '1px solid',
+                        borderColor: tag === 'production' ? 'transparent' : '#222'
+                      }}>
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <div className="p-4 space-y-2">
+                  {[
+                    { name: 'code-reviewer', tags: ['production', 'security'], desc: 'Comprehensive code review prompt...', match: true },
+                    { name: 'sql-generator', tags: ['production'], desc: 'Generate safe SQL queries with...', match: true },
+                    { name: 'test-writer', tags: ['testing'], desc: 'Write unit tests for given code...', match: false },
+                  ].map((prompt, i) => (
+                    <div key={prompt.name} className={`p-3 rounded-lg cursor-pointer transition-all ${prompt.match ? 'elevated-accent' : ''}`} style={{ 
+                      background: prompt.match ? undefined : 'transparent',
+                      border: '1px solid',
+                      borderColor: prompt.match ? 'transparent' : 'transparent'
+                    }}>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-medium text-sm" style={{ color: '#FAFAFA' }}>{prompt.name}</span>
+                        <span className="text-xs px-2 py-0.5 rounded elevated-raised" style={{ background: undefined, color: '#4ADE80' }}>v7</span>
+                      </div>
+                      <p className="text-xs mb-2" style={{ color: '#555' }}>{prompt.desc}</p>
+                      <div className="flex gap-1">
+                        {prompt.tags.map(t => (
+                          <span key={t} className="text-xs px-1.5 py-0.5 rounded" style={{ background: '#1a1a1a', color: '#666' }}>{t}</span>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Feature 4: API Keys */}
+        <div>
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <h3 className="text-2xl md:text-3xl font-bold text-white mb-4">Sync from CLI to web and back.</h3>
+              <p className="text-lg leading-relaxed mb-6" style={{ color: '#888' }}>
+                Generate API keys from the web dashboard and use them to authenticate your CLI. Your prompts stay in sync across all your machines via the cloud storage.
+              </p>
+              <ul className="space-y-3">
+                {['Multiple keys for different machines', 'Revoke keys instantly from dashboard', 'Track usage and last used time'].map(item => (
+                  <li key={item} className="flex items-center gap-3" style={{ color: '#888' }}>
+                    <div className="w-5 h-5 rounded-full flex items-center justify-center" style={{ background: 'rgba(74,222,128,0.15)' }}>
+                      <span style={{ color: '#4ADE80', fontSize: '12px' }}>✓</span>
+                    </div>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <div className="rounded-xl overflow-hidden elevated-surface" style={{ border: '1px solid #333', background: undefined }}>
+                <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: '#222', background: '#141414' }}>
+                  <span className="text-xs font-mono" style={{ color: '#555' }}>API Keys</span>
+                  <button className="px-3 py-1.5 rounded-lg text-xs font-medium elevated-surface" style={{ background: '#F59E0B', color: '#080808' }}>+ Generate Key</button>
+                </div>
+                <div className="p-4 space-y-3">
+                  {[
+                    { name: 'MacBook Pro', key: 'pv_l4k8...j2m3', last: '2 minutes ago', active: true },
+                    { name: 'Work Desktop', key: 'pv_x9m2...p5k1', last: '3 hours ago', active: true },
+                    { name: 'Old Laptop', key: 'pv_a1b8...c7d4', last: '2 days ago', active: false },
+                  ].map((apiKey, i) => (
+                    <div key={apiKey.name} className={`flex items-center gap-4 p-3 rounded-lg ${apiKey.active ? 'elevated-success' : ''}`} style={{ background: apiKey.active ? undefined : '#141414', border: '1px solid', borderColor: apiKey.active ? 'transparent' : '#222' }}>
+                      <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: '#1a1a1a' }}>
+                        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" style={{ color: apiKey.active ? '#4ADE80' : '#555' }}>
+                          <path d="M9 2L3 5v6c0 3.5 2.5 6.5 6 7.5 3.5-1 6-4 6-7.5V5L9 2z" stroke="currentColor" strokeWidth="1.5"/>
+                          <path d="M6 9l2 2 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-sm" style={{ color: '#FAFAFA' }}>{apiKey.name}</span>
+                          {apiKey.active && <span className="w-2 h-2 rounded-full" style={{ background: '#4ADE80' }} />}
+                        </div>
+                        <div className="text-xs font-mono" style={{ color: '#555' }}>{apiKey.key}</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-xs" style={{ color: '#555' }}>{apiKey.last}</div>
+                        <button className="text-xs mt-1" style={{ color: '#F87171' }}>Revoke</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -374,7 +705,7 @@ export default async function LandingPage() {
               </ul>
             </div>
             <div className="flex-1">
-              <div className="rounded-xl overflow-hidden" style={{ border: '1px solid #222', background: '#0f0f0f' }}>
+              <div className="rounded-xl overflow-hidden elevated-surface" style={{ border: '1px solid #333', background: undefined }}>
                 <div className="flex items-center gap-2 px-4 py-3 border-b" style={{ borderColor: '#222', background: '#141414' }}>
                   <div className="w-2.5 h-2.5 rounded-full" style={{ background: '#FF5F57' }} />
                   <div className="w-2.5 h-2.5 rounded-full" style={{ background: '#FFBD2E' }} />

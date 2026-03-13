@@ -1,49 +1,31 @@
 import NextAuth from 'next-auth'
-import GithubProvider from 'next-auth/providers/github'
+import { prisma } from '@/lib/prisma'
+import { authConfig } from '@/lib/auth.config'
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  secret: process.env.NEXTAUTH_SECRET,
-  trustHost: true,
-  session: { strategy: 'jwt' },
-  providers: [
-    GithubProvider({
-      clientId: process.env.GITHUB_ID!,
-      clientSecret: process.env.GITHUB_SECRET!,
-      checks: ['state'],
-    }),
-  ],
-  cookies: {
-    state: {
-      name: 'authjs.state',
-      options: { httpOnly: true, sameSite: 'none', path: '/', secure: true },
-    },
-    csrfToken: {
-      name: 'authjs.csrf-token',
-      options: { httpOnly: true, sameSite: 'none', path: '/', secure: true },
-    },
-    callbackUrl: {
-      name: 'authjs.callback-url',
-      options: { sameSite: 'none', path: '/', secure: true },
-    },
-    pkceCodeVerifier: {
-      name: 'authjs.pkce-code-verifier',
-      options: { httpOnly: true, sameSite: 'none', path: '/', secure: true },
-    },
-    sessionToken: {
-      name: 'authjs.session-token',
-      options: { httpOnly: true, sameSite: 'none', path: '/', secure: true },
-    },
-  },
-  pages: { signIn: '/login' },
+  ...authConfig,
   callbacks: {
-    jwt({ token, user, profile }) {
-      if (user) { token.id = user.id }
-      if (profile) { token.login = (profile as any).login }
-      return token
-    },
-    session({ session, token }) {
-      if (session.user) { session.user.id = (token.id as string) ?? token.sub! }
-      return session
+    ...authConfig.callbacks,
+    async signIn(params) {
+      const { user } = params
+
+      // Create or update user in our database on sign in (Node.js runtime only).
+      if (user.email) {
+        await prisma.user.upsert({
+          where: { email: user.email },
+          create: {
+            email: user.email,
+            name: user.name,
+            image: user.image,
+          },
+          update: {
+            name: user.name,
+            image: user.image,
+          },
+        })
+      }
+
+      return true
     },
   },
 })

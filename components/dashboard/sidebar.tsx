@@ -25,6 +25,20 @@ const navItems = [
     ),
   },
   {
+    href: '/dashboard/canvas',
+    label: 'Canvas',
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <rect x="2" y="2" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.3" />
+        <rect x="9" y="2" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.3" />
+        <rect x="2" y="9" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.3" />
+        <rect x="9" y="9" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.3" />
+        <path d="M4.5 4.5L11.5 11.5M11.5 4.5L4.5 11.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+      </svg>
+    ),
+    badge: 'Beta',
+  },
+  {
     href: '/explore',
     label: 'Explore',
     icon: (
@@ -67,14 +81,21 @@ function NavLinks({ pathname }: { pathname: string }) {
         key={item.href}
         href={item.href}
         className={cn(
-          'flex items-center gap-2.5 rounded-lg border px-3 py-2 text-sm font-medium transition-colors',
+          'flex items-center justify-between rounded-lg border px-3 py-2 text-sm font-medium transition-colors',
           active
             ? 'border-[#2f2413] bg-[#15120d] text-zinc-50'
             : 'border-transparent text-zinc-400 hover:border-[#222222] hover:bg-[#131313] hover:text-zinc-100'
         )}
       >
-        <span className={active ? 'text-[#F59E0B]' : 'text-zinc-500'}>{item.icon}</span>
-        {item.label}
+        <span className="flex items-center gap-2.5">
+          <span className={active ? 'text-[#F59E0B]' : 'text-zinc-500'}>{item.icon}</span>
+          {item.label}
+        </span>
+        {item.badge && (
+          <span className="text-[10px] px-1.5 py-0.5 rounded font-medium" style={{ background: 'rgba(245,158,11,0.15)', color: '#F59E0B' }}>
+            {item.badge}
+          </span>
+        )}
       </Link>
     )
   })
