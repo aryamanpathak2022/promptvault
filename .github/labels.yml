@@ -1,0 +1,60 @@
+---
+# Documentation for GitHub labels
+# These labels are recommended for open source projects
+
+labels:
+  - name: "bug"
+    color: "d73a49"
+    description: "Something isn't working as expected"
+    
+  - name: "enhancement"
+    color: "a2eeef"
+    description: "New feature or request"
+    
+  - name: "good first issue"
+    color: "7057ff"
+    description: "Good for newcomers"
+    
+  - name: "help wanted"
+    color: "008672"
+    description: "Extra attention is needed"
+    
+  - name: "documentation"
+    color: "0075ca"
+    description: "Improvements or additions to documentation"
+    
+  - name: "question"
+    color: "d876e3"
+    description: "Further information is requested"
+    
+  - name: "duplicate"
+    color: "cfd3d7"
+    description: "This issue or pull request already exists"
+    
+  - name: "wontfix"
+    color: "ffffff"
+    description: "This will not be worked on"
+    
+  - name: "priority: high"
+    color: "b60205"
+    description: "High priority issue"
+    
+  - name: "priority: low"
+    color: "d2da48"
+    description: "Low priority issue"
+    
+  - name: "cli"
+    color: "f3c84c"
+    description: "Related to the CLI tool"
+    
+  - name: "mcp"
+    color: "8b5cf6"
+    description: "Related to MCP server"
+    
+  - name: "web"
+    color: "10b981"
+    description: "Related to the web dashboard"
+    
+  - name: "testing"
+    color: "f472b6"
+    description: "Related to tests"

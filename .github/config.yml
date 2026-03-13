@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Documentation
+    url: https://github.com/aryamanpathak2022/promptvault#readme
+    about: Check the README for comprehensive documentation
+  - name: Discord Community
+    url: https://discord.gg/promptvault
+    about: Join our Discord server for real-time discussions

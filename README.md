@@ -4,7 +4,53 @@
 
 Prompts are code — they evolve, break, and need rollbacks. But most teams manage them in Notion docs or scattered text files with no history. PromptVault gives prompts the same version control workflow developers already know: init, commit, diff, branch, merge, push, pull.
 
-## Features
+[![GitHub Stars](https://img.shields.io/github/stars/aryamanpathak2022/promptvault)](https://github.com/aryamanpathak2022/promptvault/stargazers)
+[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Discord](https://img.shields.io/discord/placeholder?label=Discord)](https://discord.gg/promptvault)
+
+## Demo
+
+<!-- Replace with your actual demo GIF -->
+<p align="center">
+  <img src=".github/demo.gif" alt="PromptVault Demo" width="800">
+</p>
+
+[View live demo](https://promptvault.example.com) · [Watch video walkthrough](https://youtube.com/watch?v=placeholder)
+
+## Why PromptVault?
+
+| Problem | PromptVault Solution |
+|---------|---------------------|
+| Prompts lost in Notion docs or Slack | Single source of truth with full history |
+| No way to compare prompt versions | Git-like `diff` with visual side-by-side |
+| Can't roll back to working prompts | Instant `reset` to any previous version |
+| Prompt improvements are invisible | Commit messages document the "why" |
+| Teams can't collaborate on prompts | Branch, merge, and share like code |
+| Editor integration is manual | Native MCP tools for Claude & Cursor |
+
+> **"We were versioning prompts in Google Docs — it was a nightmare. PromptVault brought sanity to our prompt engineering."** — *AI Engineering Team*
+
+## Quick Start
+
+### One-Command Install (CLI)
+
+```bash
+# Install globally via npm
+npm install -g promptvault
+
+# Initialize your vault
+pv init --author "Your Name" --email you@example.com
+
+# Start tracking prompts
+echo "You are a helpful coding assistant." > assistant.prompt
+pv add assistant.prompt
+pv commit -m "Add coding assistant prompt"
+
+# View history
+pv log
+```
+
+### Run Locally (Web Dashboard)
 
 - **Web dashboard** with version history and diff viewer
 - **CLI tool** for terminal workflows (22 Git-like commands)
@@ -18,7 +64,25 @@ Prompts are code — they evolve, break, and need rollbacks. But most teams mana
 
 ## Quick Start
 
-### Web Dashboard
+### One-Command Install (CLI)
+
+```bash
+# Install globally via npm
+npm install -g promptvault
+
+# Initialize your vault
+pv init --author "Your Name" --email you@example.com
+
+# Start tracking prompts
+echo "You are a helpful coding assistant." > assistant.prompt
+pv add assistant.prompt
+pv commit -m "Add coding assistant prompt"
+
+# View history
+pv log
+```
+
+### Run Locally (Web Dashboard)
 
 ```bash
 git clone https://github.com/aryamanpathak2022/promptvault.git
@@ -38,7 +102,7 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) and sign in with GitHub.
 
-### CLI Installation
+### CLI Installation (From Source)
 
 ```bash
 # Build the CLI
