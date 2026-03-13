@@ -52,6 +52,10 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     return NextResponse.json({ error: 'Content is required.' }, { status: 400 })
   }
 
+  if (content.length > 100_000) {
+    return NextResponse.json({ error: 'Content must be 100,000 characters or less.' }, { status: 400 })
+  }
+
   const version = await prisma.$transaction(async (tx) => {
     const lastVersion = await tx.version.findFirst({
       where: { promptId: id },

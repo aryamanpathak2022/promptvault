@@ -66,6 +66,18 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Name and content are required.' }, { status: 400 })
   }
 
+  if (name.length > 200) {
+    return NextResponse.json({ error: 'Name must be 200 characters or less.' }, { status: 400 })
+  }
+
+  if (content.length > 100_000) {
+    return NextResponse.json({ error: 'Content must be 100,000 characters or less.' }, { status: 400 })
+  }
+
+  if (tags.length > 20) {
+    return NextResponse.json({ error: 'Maximum 20 tags allowed.' }, { status: 400 })
+  }
+
   const prompt = await prisma.prompt.create({
     data: {
       name,

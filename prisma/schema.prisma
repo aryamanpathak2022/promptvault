@@ -63,6 +63,9 @@ model Prompt {
   isPublic  Boolean   @default(false)
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([isPublic])
 }
 
 model Version {
@@ -74,6 +77,8 @@ model Version {
   version   Int
   model     String?
   createdAt DateTime @default(now())
+
+  @@index([promptId])
 }
 
 model ApiKey {
@@ -81,7 +86,10 @@ model ApiKey {
   userId    String
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   key       String    @unique
+  keyPrefix String    @default("")
   name      String
   createdAt DateTime  @default(now())
   lastUsed  DateTime?
+
+  @@index([userId])
 }

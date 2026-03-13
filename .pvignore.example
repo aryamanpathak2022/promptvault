@@ -1,0 +1,13 @@
+# .pvignore — files to exclude from prompt vault operations
+# Works like .gitignore: one pattern per line, # for comments
+
+# Ignore drafts
+drafts/
+*-draft.prompt
+
+# Ignore temporary test prompts
+test-*.prompt
+tmp-*.prompt
+
+# Ignore generated prompts
+generated/

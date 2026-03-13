@@ -1,10 +1,12 @@
 node_modules/
 .next/
+dist/
+.promptvault/
 .env.local
+.env
 prisma/dev.db
 prisma/dev.db-journal
-*.log
 dev.db
 dev.db-journal
+*.log
 *.png
-.env
